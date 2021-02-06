@@ -1,0 +1,1 @@
+# Google Apple Exposure Notification System (GAENS) wearable implementation
