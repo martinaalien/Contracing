@@ -1,0 +1,31 @@
+/* This file consist of overlays which overwrite the corresponding entries in the
+   hardware-describing nrf52833dk_nrf52833.dts (Device Tree Source) file. */
+
+
+/* An overlay of uart0 to enable logging on P0.15 */
+&uart0 {
+	compatible = "nordic,nrf-uarte";
+	status = "okay";
+	current-speed = <115200>;
+	tx-pin = <15>;
+	rx-pin = <8>;
+	rts-pin = <5>;
+	cts-pin = <7>;
+};
+
+/* An overlay of SPI3 to enable the N25Q32 external memory */
+&spi3 {
+	status = "okay";
+	sck-pin = <31>;
+	miso-pin = <29>;
+	mosi-pin = <30>;
+	cs-gpios = <&arduino_header 2 GPIO_ACTIVE_LOW>; /* <28> */
+	N25Q032: N25Q032A13ESC40G@0 {
+		compatible = "jedec,spi-nor";
+        spi-max-frequency = <80000000>;
+		reg = <0>;
+		label = "N25Q032";
+		jedec-id = [20 BA 16];
+		size = <33554432>;
+	};
+};
