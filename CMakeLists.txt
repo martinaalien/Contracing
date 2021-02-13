@@ -5,4 +5,8 @@ project(my_zephyr_app)
 
 # Add your source file to the "app" target. This must come after
 # find_package(Zephyr) which defines the target.
-target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE src/main.c  
+                           src/ble/ble.c 
+                           src/ble/advertise.c 
+                           src/ble/scan.c 
+                           src/ble/connection.c)
