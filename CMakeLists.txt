@@ -9,4 +9,5 @@ target_sources(app PRIVATE src/main.c
                            src/ble/ble.c 
                            src/ble/advertise.c 
                            src/ble/scan.c 
-                           src/ble/connection.c)
+                           src/ble/connection.c
+                           src/records/extmem.c)
