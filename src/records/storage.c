@@ -42,8 +42,6 @@ int storage_write_entry(int timestamp, uint8_t rolling_proximity[],
 
 int storage_read(uint32_t offset, uint8_t buf[], size_t len)
 {
-    uint8_t buf[SIZE_OF_ONE_ENTRY];
-
     memset(buf, 0, SIZE_OF_ONE_ENTRY);
 
     extmem_read(offset, buf, SIZE_OF_ONE_ENTRY);
