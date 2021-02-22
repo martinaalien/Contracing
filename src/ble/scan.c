@@ -3,14 +3,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "scan.h"
+#include <stddef.h>
 
 /* Zephyr includes */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
-#include <stddef.h>
-#include <sys/printk.h>
+
+#include <logging/log.h>
 #include <sys/util.h>
 #include <zephyr/types.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// Defines
+////////////////////////////////////////////////////////////////////////////////
+
+#define LOG_MODULE_NAME scan
+LOG_MODULE_REGISTER(scan);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
@@ -53,7 +61,7 @@ void scan_set_parameters(struct bt_le_scan_param parameters)
         scan_param = parameters;
     }
 
-    printk("Scan parameters changed\n");
+    LOG_INF("Scan parameters changed\n");
 }
 
 int scan_start()
@@ -63,13 +71,13 @@ int scan_start()
     err = bt_le_scan_start(&scan_param, _scan_cb);
     if (err)
     {
-        printk("Starting scanning failed (err %d)\n", err);
+        LOG_ERR("Starting scanning failed (err %d)\n", err);
         return -1;
     }
 
     scan_active = true;
 
-    printk("Scanning started\n");
+    LOG_INF("Scanning started\n");
     return 0;
 }
 
@@ -80,13 +88,13 @@ int scan_stop()
     err = bt_le_scan_stop();
     if (err)
     {
-        printk("Starting scanning failed (err %d)\n", err);
+        LOG_ERR("Starting scanning failed (err %d)\n", err);
         return -1;
     }
 
     scan_active = false;
 
-    printk("Scanning stopped\n");
+    LOG_INF("Scanning stopped\n");
     return 0;
 }
 
@@ -97,5 +105,5 @@ int scan_stop()
 static void _scan_cb(const bt_addr_le_t *addr, int8_t rssi, uint8_t adv_type,
                      struct net_buf_simple *buf)
 {
-    printk("Scanner found packet!\n");
+    LOG_INF("Scanner found packet!\n");
 }

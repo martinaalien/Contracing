@@ -3,15 +3,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "connection.h"
+#include <stddef.h>
 
 /* Zephyr includes */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/conn.h>
 #include <bluetooth/hci.h>
-#include <stddef.h>
-#include <sys/printk.h>
+
+#include <logging/log.h>
 #include <sys/util.h>
 #include <zephyr/types.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// Defines
+////////////////////////////////////////////////////////////////////////////////
+
+#define LOG_MODULE_NAME connection
+LOG_MODULE_REGISTER(connection);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
@@ -50,11 +58,12 @@ static void _connected(struct bt_conn *connected, uint8_t err)
 {
     if (err)
     {
-        printk("Connection failed (err %u)", err);
+        LOG_ERR("Connection failed (err %u)", err);
     }
     else
     {
-        printk("Connected");
+        LOG_INF("Connected");
+
         if (!conn)
         {
             conn = bt_conn_ref(connected);
@@ -70,5 +79,5 @@ static void _disconnected(struct bt_conn *disconn, uint8_t reason)
         conn = NULL;
     }
 
-    printk("Disconnected (reason %u)", reason);
+    LOG_INF("Disconnected (reason %u)", reason);
 }

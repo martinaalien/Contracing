@@ -4,15 +4,23 @@
 
 #include "ble.h"
 #include "connection.h"
+#include <stddef.h>
 
 /* Zephyr includes */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/conn.h>
 #include <bluetooth/hci.h>
-#include <stddef.h>
-#include <sys/printk.h>
+
+#include <logging/log.h>
 #include <sys/util.h>
 #include <zephyr/types.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// Defines
+////////////////////////////////////////////////////////////////////////////////
+
+#define LOG_MODULE_NAME ble
+LOG_MODULE_REGISTER(ble);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public functions
@@ -28,11 +36,11 @@ int ble_init(void)
     err = bt_enable(NULL);
     if (err)
     {
-        printk("Bluetooth init failed (err %d)\n", err);
+        LOG_ERR("Bluetooth init failed (err %d)\n", err);
         return 1;
     }
 
-    printk("Bluetooth initialized\n");
+    LOG_INF("Bluetooth initialized\n");
 
     return 0;
 }

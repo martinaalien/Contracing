@@ -31,7 +31,7 @@ int storage_write_entry(int timestamp, uint8_t rolling_proximity[],
  * @brief Function for reading from the external memory.
  * 
  * @param offset Offset (byte aligned) to read.
- * @param buf Offset (byte aligned) to read.
+ * @param buf Buffer that will be filled with the data that is read.
  * @param len Number of bytes to read.
  * 
  * @return int Returns 0 on success, negative otherwise.
