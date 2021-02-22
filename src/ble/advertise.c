@@ -7,14 +7,18 @@
 /* Zephyr includes */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
+
+#include <logging/log.h>
 #include <stddef.h>
-#include <sys/printk.h>
 #include <sys/util.h>
 #include <zephyr/types.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////////////////
+
+#define LOG_MODULE_NAME advertise
+LOG_MODULE_REGISTER(advertise);
 
 #define DEVICE_NAME     CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
@@ -44,13 +48,13 @@ int advertise_start()
     err = bt_le_adv_start(BT_LE_ADV_NCONN, ad, ARRAY_SIZE(ad), NULL, 0);
     if (err)
     {
-        printk("Advertising failed to start (err %d)\n", err);
+        LOG_ERR("Advertising failed to start (err %d)\n", err);
         return -1;
     }
 
     advertise_active = true;
 
-    printk("Advertising started\n");
+    LOG_INF("Advertising started\n");
     return 0;
 }
 
@@ -62,12 +66,12 @@ int advertise_stop()
     err = bt_le_adv_stop();
     if (err)
     {
-        printk("Advertising failed to stop (err %d)\n", err);
+        LOG_ERR("Advertising failed to stop (err %d)\n", err);
         return -1;
     }
 
     advertise_active = false;
 
-    printk("Advertising stopped\n");
+    LOG_INF("Advertising stopped\n");
     return 0;
 }
