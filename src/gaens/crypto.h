@@ -1,4 +1,7 @@
 
+#ifndef CRYPTO_H
+#define CRYPTO_H
+
 ////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,3 +124,5 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
  */
 int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
               const uint8_t bt_metadata_len, uint8_t *aem);
+
+#endif // CRYPTO_H
