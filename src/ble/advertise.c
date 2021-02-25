@@ -80,8 +80,9 @@ int advertise_start(advertise_packet_config packet_config)
     }
     else
     {
-        LOG_ERR("Invalid advertise packet config (config=%d) or advertising 
-                 is already active (active=%d)\n", packet_config, advertise_active);
+        LOG_ERR("Invalid advertise packet config (config=%d) or advertising \
+                 is already active (active=%d)\n",
+                packet_config, advertise_active);
         return -1;
     }
 
