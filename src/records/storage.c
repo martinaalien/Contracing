@@ -28,19 +28,19 @@ static uint32_t memory_offset = 0;
 ////////////////////////////////////////////////////////////////////////////////
 
 static void _pack_ens_log_entry(uint8_t buf[], int timestamp,
-                                const uint8_t rolling_proximity[], uint8_t rssi,
-                                uint8_t tx_power);
+                                const uint8_t gaens_service_data[],
+                                uint8_t rssi);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
-int storage_write_entry(int timestamp, const uint8_t rolling_proximity[],
-                        uint8_t rssi, uint8_t tx_power)
+int storage_write_entry(int timestamp, const uint8_t gaens_service_data[],
+                        uint8_t rssi)
 {
     uint8_t entry[SIZE_OF_ONE_ENTRY] = {};
 
-    _pack_ens_log_entry(entry, timestamp, rolling_proximity, rssi, tx_power);
+    _pack_ens_log_entry(entry, timestamp, gaens_service_data, rssi);
 
     if (extmem_write(memory_offset, entry, SIZE_OF_ONE_ENTRY) != 0)
     {
@@ -103,14 +103,13 @@ int storage_delete_all(void)
  * 
  * @param buf A buffer that will be filled with an ENS record entry.
  * @param timestamp The timestamp of the received advertisement packet.
- * @param rolling_proximity The rolling proximity identifier from the received 
- * advertisement packet.
+ * @param gaens_service_data The rolling proximity identifier and associated
+ * encrypted metadata from the received advertisement packet.
  * @param rssi The RSSI from the received advertisement packet.
- * @param tx_power The TX power from the received advertisement packet.
  */
 static void _pack_ens_log_entry(uint8_t buf[], int timestamp,
-                                const uint8_t rolling_proximity[], uint8_t rssi,
-                                uint8_t tx_power)
+                                const uint8_t gaens_service_data[],
+                                uint8_t rssi)
 {
     // Only the three least significant bytes of the sequence number is used
     // This is according to the WENS specifications
@@ -130,30 +129,25 @@ static void _pack_ens_log_entry(uint8_t buf[], int timestamp,
     // This is the ENS-specific data in the LTV structure field
     buf[9] = 0x10;  // The length of the ENS specific data
     buf[10] = 0x00; // The type indicating that this is ENS-specific data
-    buf[11] = rolling_proximity[0];
-    buf[12] = rolling_proximity[1];
-    buf[13] = rolling_proximity[2];
-    buf[14] = rolling_proximity[3];
-    buf[15] = rolling_proximity[4];
-    buf[16] = rolling_proximity[5];
-    buf[17] = rolling_proximity[6];
-    buf[18] = rolling_proximity[7];
-    buf[19] = rolling_proximity[8];
-    buf[20] = rolling_proximity[9];
-    buf[21] = rolling_proximity[10];
-    buf[22] = rolling_proximity[11];
-    buf[23] = rolling_proximity[12];
-    buf[24] = rolling_proximity[13];
-    buf[25] = rolling_proximity[14];
-    buf[26] = rolling_proximity[15];
+    buf[11] = gaens_service_data[0];
+    buf[12] = gaens_service_data[1];
+    buf[13] = gaens_service_data[2];
+    buf[14] = gaens_service_data[3];
+    buf[15] = gaens_service_data[4];
+    buf[16] = gaens_service_data[5];
+    buf[17] = gaens_service_data[6];
+    buf[18] = gaens_service_data[7];
+    buf[19] = gaens_service_data[8];
+    buf[20] = gaens_service_data[9];
+    buf[21] = gaens_service_data[10];
+    buf[22] = gaens_service_data[11];
+    buf[23] = gaens_service_data[12];
+    buf[24] = gaens_service_data[13];
+    buf[25] = gaens_service_data[14];
+    buf[26] = gaens_service_data[15];
 
     // This is the RSSI in the LTV structure field
     buf[27] = 0x01; // Length of the RSSI value
     buf[28] = 0x02; // The type indicating that this is the RSSI
     buf[29] = rssi;
-
-    // This is the Tx Power Level in the LTV structure field
-    buf[30] = 0x01; // Length of the Tx Power Level value
-    buf[31] = 0x03; // The type indicating that this is the Tx Power Level
-    buf[32] = tx_power;
 }
