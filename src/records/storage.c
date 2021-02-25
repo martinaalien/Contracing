@@ -28,14 +28,14 @@ static uint32_t memory_offset = 0;
 ////////////////////////////////////////////////////////////////////////////////
 
 static void _pack_ens_log_entry(uint8_t buf[], int timestamp,
-                                uint8_t rolling_proximity[], uint8_t rssi,
+                                const uint8_t rolling_proximity[], uint8_t rssi,
                                 uint8_t tx_power);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
-int storage_write_entry(int timestamp, uint8_t rolling_proximity[],
+int storage_write_entry(int timestamp, const uint8_t rolling_proximity[],
                         uint8_t rssi, uint8_t tx_power)
 {
     uint8_t entry[SIZE_OF_ONE_ENTRY] = {};
@@ -109,7 +109,7 @@ int storage_delete_all(void)
  * @param tx_power The TX power from the received advertisement packet.
  */
 static void _pack_ens_log_entry(uint8_t buf[], int timestamp,
-                                uint8_t rolling_proximity[], uint8_t rssi,
+                                const uint8_t rolling_proximity[], uint8_t rssi,
                                 uint8_t tx_power)
 {
     // Only the three least significant bytes of the sequence number is used

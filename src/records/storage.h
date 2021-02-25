@@ -24,7 +24,7 @@
  * 
  * @return int Returns 0 on success, negative otherwise.
  */
-int storage_write_entry(int timestamp, uint8_t rolling_proximity[],
+int storage_write_entry(int timestamp, const uint8_t rolling_proximity[],
                         uint8_t rssi, uint8_t tx_power);
 
 /**
