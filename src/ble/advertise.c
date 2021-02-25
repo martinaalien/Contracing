@@ -3,10 +3,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "advertise.h"
+#include <stddef.h>
 
 /* Zephyr includes */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
+#include <bluetooth/uuid.h>
 
 #include <logging/log.h>
 #include <stddef.h>
@@ -20,32 +22,69 @@
 #define LOG_MODULE_NAME advertise
 LOG_MODULE_REGISTER(advertise);
 
-#define DEVICE_NAME     CONFIG_BT_DEVICE_NAME
-#define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
+#define GAENS_SERVICE_DATA_LENGTH 22
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
 ////////////////////////////////////////////////////////////////////////////////
 
-static uint8_t mfg_data[] = {0xff, 0xff};
+static const uint8_t WENS_FLAGS[] = {(BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)};
+static const uint8_t WENS_UUID[] = {
+    0xFF,
+    0xFF}; // WENS UUID. NOTE: This is not the correct UUID, but is just a placeholder until the correct UUID is found.
+static const uint8_t GAENS_UUID[] = {0x6F, 0xFD}; // Google/Apple ENS UUID
+static const uint8_t GAENS_FLAGS[] = {
+    0x1A}; // The flags are defined by the GAENS specification
 
 static bool advertise_active = false;
 
-static const struct bt_data ad[] = {
-    BT_DATA(BT_DATA_MANUFACTURER_DATA, mfg_data, 3),
-    BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
-};
+static uint8_t gaens_service_data[GAENS_SERVICE_DATA_LENGTH] = {};
+
+static const struct bt_data ad_wens[] = {
+    BT_DATA(BT_DATA_FLAGS, WENS_FLAGS, sizeof(WENS_FLAGS)),
+    BT_DATA(BT_DATA_UUID16_ALL, WENS_UUID, sizeof(WENS_UUID))};
+
+static const struct bt_data ad_gaens[] = {
+    BT_DATA(BT_DATA_FLAGS, GAENS_FLAGS, sizeof(GAENS_FLAGS)),
+    BT_DATA(BT_DATA_UUID16_ALL, GAENS_UUID, sizeof(GAENS_UUID)),
+    BT_DATA(BT_DATA_SVC_DATA16, gaens_service_data, GAENS_SERVICE_DATA_LENGTH)};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
-int advertise_start()
+int advertise_start(advertise_packet_config packet_config)
 {
     int err;
 
     /* Start advertising */
-    err = bt_le_adv_start(BT_LE_ADV_NCONN, ad, ARRAY_SIZE(ad), NULL, 0);
+    if ((packet_config == ADVERTISE_GAENS) & !advertise_active)
+    {
+        // NOTE: Fill gaens_service_data with the service data here
+
+        // 1. Fill in the UUID
+        gaens_service_data[0] = GAENS_UUID[0];
+        gaens_service_data[1] = GAENS_UUID[1];
+
+        // 2. Fill in the Proximity Identifier
+
+        // 3. Fill in the Associated Encrypted Metadata
+
+        err = bt_le_adv_start(BT_LE_ADV_NCONN, ad_gaens, ARRAY_SIZE(ad_gaens),
+                              NULL, 0);
+    }
+    else if ((packet_config == ADVERTISE_WENS) & !advertise_active)
+    {
+        err = bt_le_adv_start(BT_LE_ADV_CONN, ad_wens, ARRAY_SIZE(ad_wens),
+                              NULL, 0);
+    }
+    else
+    {
+        LOG_ERR("Invalid advertise packet config (config=%d) or advertising 
+                 is already active (active=%d)\n", packet_config, advertise_active);
+        return -1;
+    }
+
     if (err)
     {
         LOG_ERR("Advertising failed to start (err %d)\n", err);
@@ -62,7 +101,7 @@ int advertise_stop()
 {
     int err;
 
-    /* Stop advertising */
+    // Stop advertising
     err = bt_le_adv_stop();
     if (err)
     {
