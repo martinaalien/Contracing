@@ -8,7 +8,7 @@
 // Defines
 ////////////////////////////////////////////////////////////////////////////////
 
-#define SIZE_OF_ONE_ENTRY 33 // The size of one ENS log entry in bytes
+#define SIZE_OF_ONE_ENTRY 30 // The size of one ENS log entry in bytes
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function declarations
@@ -18,14 +18,14 @@
  * @brief Function for writing an ENS log entry to the external memory.
  * 
  * @param timestamp The timestamp of the received advertisement packet.
- * @param rolling_proximity The rolling proximity identifier from the received advertisement packet.
+ * @param gaens_service_data The rolling proximity identifier and associated
+ * encrypted metadata from the received advertisement packet.
  * @param rssi The RSSI from the received advertisement packet.
- * @param tx_power The TX power from the received advertisement packet.
  * 
  * @return int Returns 0 on success, negative otherwise.
  */
-int storage_write_entry(int timestamp, uint8_t rolling_proximity[],
-                        uint8_t rssi, uint8_t tx_power);
+int storage_write_entry(int timestamp, const uint8_t gaens_service_data[],
+                        uint8_t rssi);
 
 /**
  * @brief Function for reading from the external memory.
