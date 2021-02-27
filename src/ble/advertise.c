@@ -53,12 +53,12 @@ static const struct bt_data ad_gaens[] = {
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
-int advertise_start(advertise_packet_config packet_config)
+int advertise_start(advertise_packet_type packet_type)
 {
     int err;
 
     /* Start advertising */
-    if ((packet_config == ADVERTISE_GAENS) & !advertise_active)
+    if ((packet_type == ADVERTISE_GAENS) & !advertise_active)
     {
         // NOTE: Fill gaens_service_data with the service data here
 
@@ -73,7 +73,7 @@ int advertise_start(advertise_packet_config packet_config)
         err = bt_le_adv_start(BT_LE_ADV_NCONN, ad_gaens, ARRAY_SIZE(ad_gaens),
                               NULL, 0);
     }
-    else if ((packet_config == ADVERTISE_WENS) & !advertise_active)
+    else if ((packet_type == ADVERTISE_WENS) & !advertise_active)
     {
         err = bt_le_adv_start(BT_LE_ADV_CONN, ad_wens, ARRAY_SIZE(ad_wens),
                               NULL, 0);
@@ -82,7 +82,7 @@ int advertise_start(advertise_packet_config packet_config)
     {
         LOG_ERR("Invalid advertise packet config (config=%d) or advertising \
                  is already active (active=%d)\n",
-                packet_config, advertise_active);
+                packet_type, advertise_active);
         return -1;
     }
 

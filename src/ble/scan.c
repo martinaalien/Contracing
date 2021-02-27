@@ -5,15 +5,18 @@
 #include "scan.h"
 #include "../records/storage.h"
 #include <stddef.h>
+#include <unistd.h>
 
 /* Zephyr includes */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/uuid.h>
 
-#include <logging/log.h>
 #include <sys/byteorder.h>
+#include <sys/time.h>
 #include <sys/util.h>
+
+#include <logging/log.h>
 #include <zephyr/types.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +37,6 @@ LOG_MODULE_REGISTER(scan);
 ////////////////////////////////////////////////////////////////////////////////
 
 static bool scan_active = false;
-static uint8_t last_rssi = 0; // The most recent received RSSI value
 
 ////////////////////////////////////////////////////////////////////////////////
 // Type declarations
@@ -54,7 +56,7 @@ static struct bt_le_scan_param scan_param = {
 static void _scan_cb(const bt_addr_le_t *addr, int8_t rssi, uint8_t adv_type,
                      struct net_buf_simple *buf);
 
-static bool _data_cb(struct bt_data *data, void *user_data);
+static bool _data_cb(struct bt_data *data, void *rssi_buf);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public functions
@@ -125,15 +127,11 @@ int scan_stop()
 static void _scan_cb(const bt_addr_le_t *addr, int8_t rssi, uint8_t adv_type,
                      struct net_buf_simple *buf)
 {
-    char dev[BT_ADDR_LE_STR_LEN];
-
-    bt_addr_le_to_str(addr, dev, sizeof(dev));
-
     if (adv_type == BT_GAP_ADV_TYPE_ADV_SCAN_IND ||
         adv_type == BT_GAP_ADV_TYPE_ADV_NONCONN_IND)
     {
-        last_rssi = rssi;
-        bt_data_parse(buf, _data_cb, (void *)addr);
+        int8_t rssi_buf[sizeof(rssi)] = {rssi};
+        bt_data_parse(buf, _data_cb, rssi_buf);
     }
 }
 
@@ -141,13 +139,14 @@ static void _scan_cb(const bt_addr_le_t *addr, int8_t rssi, uint8_t adv_type,
  * @brief Function for parsing the received advertising packet
  * 
  * @param data The advertising data.
- * @param user_data  Bluetooth device address.
+ * @param rssi_buf  The RSSI value.
  * @return bool Continue parsing data if true.
  */
-static bool _data_cb(struct bt_data *data, void *user_data)
+static bool _data_cb(struct bt_data *data, void *rssi_buf)
 {
     uint16_t u16;
     struct bt_uuid *uuid;
+    int8_t *rssi = rssi_buf;
 
     switch (data->type)
     {
@@ -192,8 +191,7 @@ static bool _data_cb(struct bt_data *data, void *user_data)
             return true;
         }
 
-        // NOTE: Write GAENS data to memory here
-        // Something like: storage_write_entry(time, &data->data[2], last_rssi);
+        storage_write_entry(time(NULL), &data->data[2], *rssi);
 
         return false;
     default:
