@@ -24,7 +24,7 @@ LOG_MODULE_REGISTER(crypto);
 // Private function declarations
 ////////////////////////////////////////////////////////////////////////////////
 
-int hkdf_generate_key(const uint8_t *int_key, const uint8_t int_key_len,
+int _hkdf_generate_key(const uint8_t *int_key, const uint8_t int_key_len,
                       uint8_t *info, uint8_t info_len, uint8_t *out_key,
                       const uint8_t out_key_len);
 
@@ -62,7 +62,7 @@ int crypto_rpik(const uint8_t *tek, const uint8_t tek_len, uint8_t *rpik,
 {
     uint8_t *info = "EN-RPIK";
 
-    if (hkdf_generate_key(tek, tek_len, info, strlen(info), rpik, rpik_len) !=
+    if (_hkdf_generate_key(tek, tek_len, info, strlen(info), rpik, rpik_len) !=
         0)
     {
         LOG_ERR("Failed to generate rolling proximity identified key.\n");
@@ -105,7 +105,7 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
 {
     uint8_t *info = "EN-AEMK";
 
-    if (hkdf_generate_key(tek, tek_len, info, strlen(info), aemk, aemk_len) !=
+    if (_hkdf_generate_key(tek, tek_len, info, strlen(info), aemk, aemk_len) !=
         0)
     {
         LOG_ERR("Failed to generate associated encrypted metadata key.\n");
@@ -154,7 +154,7 @@ int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
  * @param out_key_len Length of output key (should be same as @c in_key_len)
  * @return int 0 on success, negative otherwise
  */
-int hkdf_generate_key(const uint8_t *in_key, const uint8_t in_key_len,
+int _hkdf_generate_key(const uint8_t *in_key, const uint8_t in_key_len,
                       uint8_t *info, uint8_t info_len, uint8_t *out_key,
                       const uint8_t out_key_len)
 {

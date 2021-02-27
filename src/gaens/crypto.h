@@ -20,25 +20,25 @@
 
 /**
  * @brief Length of a Temporary Exposure Key as specified in GAENS cryptography
- * specifications.
+ * specifications (in bytes).
  */
 #define TEK_LENGTH 16
 
 /**
  * @brief Length of a Rolling Proximity Identifier Key as specified in GAENS
- * cryptograhy specifications. 
+ * cryptograhy specifications (in bytes). 
  */
 #define RPIK_LENGTH 16
 
 /**
  * @brief Length of a Rolling Proximity Identifier as specified in GAENS
- * cryptography specifications.
+ * cryptography specifications (in bytes).
  */
 #define RPI_LENGTH 16
 
 /**
  * @brief Length of an Associated Encrypted Metadata Key as specified in GAENS
- * cryptography specifications.
+ * cryptography specifications (in bytes).
  */
 #define AEMK_LENGTH 16
 
@@ -109,7 +109,7 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
 
 /**
  * @brief Encrypt bluetooth metadata using an Associated Encrypted Metadata Key.
- * Here the rolling current Rolling Proximity Identifier is used as part of the
+ * Here the current Rolling Proximity Identifier is used as part of the
  * encryption.
  * 
  * @param aemk Pointer to Associated encrypted metadata key
