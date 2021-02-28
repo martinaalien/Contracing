@@ -12,4 +12,5 @@ target_sources(app PRIVATE src/main.c
                            src/ble/connection.c
                            src/records/extmem.c
                            src/records/storage.c
-                           src/gaens/crypto.c)
+                           src/gaens/crypto.c
+                           src/gaens/gaens.c)
