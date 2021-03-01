@@ -53,6 +53,7 @@ int gaens_update_rpi(void)
     if (crypto_en_interval_number(&_ble_addr_change_timestamp) < 0)
     {
         LOG_ERR("Failed to update the BLE address change timestamp");
+        return -1;
     }
 
     LOG_INF("RPI updated");
