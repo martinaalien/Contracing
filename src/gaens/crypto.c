@@ -50,7 +50,7 @@ int crypto_tek(uint8_t *tek, uint8_t tek_len, uint32_t *tek_timestamp)
 
     if (sys_csrand_get(tek, tek_len) < 0)
     {
-        LOG_ERR("Failed to generate cryptographically secure random number.\n");
+        LOG_ERR("Failed to generate cryptographically secure random number.");
         return -1;
     }
 
@@ -65,7 +65,7 @@ int crypto_rpik(const uint8_t *tek, const uint8_t tek_len, uint8_t *rpik,
     if (_hkdf_generate_key(tek, tek_len, info, strlen(info), rpik, rpik_len) !=
         0)
     {
-        LOG_ERR("Failed to generate rolling proximity identified key.\n");
+        LOG_ERR("Failed to generate rolling proximity identified key.");
         return -1;
     }
 
@@ -85,7 +85,7 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi)
     mbedtls_aes_context ctx;
     if (mbedtls_aes_setkey_enc(&ctx, rpik, 128) != 0)
     {
-        LOG_ERR("Failed to set AES encryption key.\n");
+        LOG_ERR("Failed to set AES encryption key.");
         return -1;
     }
 
@@ -93,7 +93,7 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi)
     if (mbedtls_aes_crypt_ecb(&ctx, MBEDTLS_AES_ENCRYPT, padded_data, rpi) != 0)
     {
         LOG_ERR("Failed to create rolling proximity identifier from AES in "
-                "mbedtls.\n");
+                "mbedtls.");
         return -1;
     }
 
@@ -108,7 +108,7 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
     if (_hkdf_generate_key(tek, tek_len, info, strlen(info), aemk, aemk_len) !=
         0)
     {
-        LOG_ERR("Failed to generate associated encrypted metadata key.\n");
+        LOG_ERR("Failed to generate associated encrypted metadata key.");
         return -1;
     }
 
@@ -122,7 +122,7 @@ int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
     mbedtls_aes_context ctx;
     if (mbedtls_aes_setkey_enc(&ctx, aemk, 128) != 0)
     {
-        LOG_ERR("Failed to set AES encryption key.\n");
+        LOG_ERR("Failed to set AES encryption key.");
         return -1;
     }
 
@@ -132,7 +132,7 @@ int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
                               bt_metadata, aem) != 0)
     {
         LOG_ERR("Failed to create associated encrypted metadata from AES-CTR "
-                "in mbedtls.\n");
+                "in mbedtls.");
         return -1;
     }
 
@@ -161,14 +161,14 @@ int _hkdf_generate_key(const uint8_t *in_key, const uint8_t in_key_len,
     if (in_key_len != out_key_len)
     {
         LOG_ERR("Invalid arguments. Input key length and output key length "
-                "must match.\n");
+                "must match.");
         return -1;
     }
 
     if (mbedtls_hkdf(&mbedtls_sha256_info, NULL, 0, in_key, in_key_len, info,
                      info_len, out_key, out_key_len) < 0)
     {
-        LOG_ERR("Failed to generate key from HKDF in mbedtls.\n");
+        LOG_ERR("Failed to generate key from HKDF in mbedtls.");
         return -1;
     }
 

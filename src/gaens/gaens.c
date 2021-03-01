@@ -49,6 +49,14 @@ int gaens_update_rpi(void)
         LOG_ERR("Failed to update rolling proximity identifier");
         return -1;
     }
+
+    if (crypto_en_interval_number(&_ble_addr_change_timestamp) < 0)
+    {
+        LOG_ERR("Failed to update the BLE address change timestamp");
+    }
+
+    LOG_INF("RPI updated");
+
     return 0;
 }
 
@@ -71,6 +79,8 @@ int gaens_update_keys(void)
         LOG_ERR("Failed to update associated encrypted metadata key");
         return -1;
     }
+
+    LOG_INF("TEK, RPIK, AEMK updated");
 
     return 0;
 }
@@ -101,6 +111,7 @@ int gaens_ble_addr_expired(void)
     // timeout has occured
     if (en_interval_num > _ble_addr_change_timestamp)
     {
+        LOG_INF("Current BLE address expired");
         return 1;
     }
 
@@ -118,6 +129,7 @@ int gaens_tek_expired(void)
 
     if (en_interval_num >= _current_tek_valid_from + TEK_ROLLING_PERIOD)
     {
+        LOG_INF("Current TEK expired");
         return 1;
     }
 
