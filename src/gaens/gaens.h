@@ -16,7 +16,13 @@
  * @brief Length (in bytes) of the associated encrypted metadata as specified 
  * in the GAENS Bluetooth specification.
  */
-#define AEM_LENGTH 20
+#define AEM_LENGTH 4
+
+/**
+ * @brief Length (in bytes) of the service data to be sent in contact tracing
+ * advertising packets as specified in the GAENS Bluetooth specification
+ */
+#define GAENS_SERVICE_DATA_LENGTH RPI_LENGTH + AEM_LENGTH
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public function declarations
