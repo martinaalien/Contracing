@@ -107,6 +107,13 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi)
     return 0;
 }
 
+int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi, const uint8_t *dec_rpi)
+{
+    // Call aes set decrytion key from mbedtls
+    // call mbed aes crypt ecb from mbedtls
+    return 0;
+}
+
 int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
                const uint8_t aemk_len)
 {
@@ -143,6 +150,13 @@ int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
         return -1;
     }
 
+    return 0;
+}
+
+int crypto_aem_decrypt(const uint8_t *aem, const uint8_t *aemk, uint8_t *aem_dec)
+{
+    // Run aes set enc (not dec) key function from mbedtls
+    // Call aes crypt ctr
     return 0;
 }
 
