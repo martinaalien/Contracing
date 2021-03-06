@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include <sys/time.h>
+#include <posix/time.h>
 #include <unistd.h>
 
 #include <mbedtls/aes.h>
@@ -34,9 +35,15 @@ int _hkdf_generate_key(const uint8_t *int_key, const uint8_t int_key_len,
 
 int crypto_en_interval_number(uint32_t *output)
 {
-    time_t epoch_timestamp = time(NULL);
+    struct timespec current_time;
 
-    *output = (uint32_t)epoch_timestamp / 600;
+    if (clock_gettime(CLOCK_REALTIME, &current_time) < 0)
+    {
+        LOG_ERR("Failed to get current time");
+        return -1;
+    }
+    
+    *output = (uint32_t)(current_time.tv_sec / 600);
 
     return 0;
 }
