@@ -28,6 +28,8 @@
 // Public function declarations
 ////////////////////////////////////////////////////////////////////////////////
 
+int gaens_init(void);
+
 /**
  * @brief Get the current rolling proximity identifier (RPI).
  * 
@@ -36,6 +38,15 @@
  * @return int 0 on success, negative otherwise
  */
 int gaens_get_rpi(uint8_t *rpi);
+
+/**
+ * @brief Get the current rolling proximity identifier decrypted
+ * 
+ * @param dec_rpi Pointer to store the current decrypted RPI in. Must be of 
+ * length RPI_LENGTH
+ * @return int 0 on success, negative otherwise
+ */
+int gaens_get_rpi_decrypted(uint8_t *dec_rpi);
 
 /**
  * @brief Get the current temporary exposure key (TEK) and the timestamp from
@@ -87,6 +98,9 @@ int gaens_update_keys(void);
  */
 int gaens_encrypt_metadata(const uint8_t *metadata, const uint8_t metadata_len,
                            uint8_t *aem);
+
+int gaens_decrypt_metadata(const uint8_t *aem, const uint8_t aem_len, 
+                            uint8_t *decrypted_aem);
 
 /**
  * @brief Check if 10 minutes have passed since the last time the Bluetooth

@@ -29,9 +29,37 @@ static uint8_t current_aemk[AEMK_LENGTH] = {0};
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
+int gaens_init(void)
+{
+    if (crypto_init() < 0)
+    {
+        LOG_ERR("Failed to init crypto module");
+        return -1;
+    }
+
+    if (gaens_update_keys() < 0)
+    {
+        LOG_ERR("Failed to initiate keys");
+        return -1;
+    }
+
+    return 0;
+}
+
 int gaens_get_rpi(uint8_t *rpi)
 {
     memcpy(rpi, current_rpi, RPI_LENGTH);
+    return 0;
+}
+
+int gaens_get_rpi_decrypted(uint8_t *dec_rpi)
+{
+    if (crypto_rpi_decrypt(current_rpik, current_rpi, dec_rpi) < 0)
+    {
+        LOG_ERR("Failed to decrypt rolling proximity identifier");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -89,10 +117,28 @@ int gaens_update_keys(void)
 int gaens_encrypt_metadata(const uint8_t *metadata, const uint8_t metadata_len,
                            uint8_t *aem)
 {
+    uint8_t rpi_copy[RPI_LENGTH];
+    memcpy(rpi_copy, current_rpi, RPI_LENGTH);
+
     if (crypto_aem(current_aemk, current_rpi, metadata, metadata_len, aem) <
         0)
     {
         LOG_ERR("Failed to encrypt metadata");
+        return -1;
+    }
+
+    return 0;
+}
+
+int gaens_decrypt_metadata(const uint8_t *aem, const uint8_t aem_len, 
+                            uint8_t *decrypted_aem)
+{
+    uint8_t rpi_copy[RPI_LENGTH];
+    memcpy(rpi_copy, current_rpi, RPI_LENGTH);
+
+    if (crypto_aem_decrypt(aem, aem_len, current_aemk, current_rpi, decrypted_aem) < 0)
+    {
+        LOG_ERR("Failed to decrypt AEM");
         return -1;
     }
 

@@ -46,6 +46,8 @@
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
+int crypto_init(void);
+
 /**
  * @brief Generate an Exposure Notification Interval Number. This number 
  * specifies a 10 minute window, meaning each time this number is incremented
@@ -95,6 +97,17 @@ int crypto_rpik(const uint8_t *tek, const uint8_t tek_len, uint8_t *rpik,
 int crypto_rpi(const uint8_t *rpik, uint8_t *rpi);
 
 /**
+ * @brief Decrypt a Rolling Proximity Identifier
+ * 
+ * @param rpik Pointer to rolling proximity identifier key used to encrypt the
+ * RPI
+ * @param rpi Pointer to rolling proximity identifier to decrypt
+ * @param dec_rpi Pointer to store decrypted RPI in (should be @c RPI_LENGTH)
+ * @return int 0 on success, negative otherwise
+ */
+int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi, uint8_t *dec_rpi);
+
+/**
  * @brief Derive Associated Encrypted Metadata Key from a Temporary Exposure
  * Key.
  * 
@@ -124,5 +137,8 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
  */
 int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
               const uint8_t bt_metadata_len, uint8_t *aem);
+
+int crypto_aem_decrypt(const uint8_t *aem, const uint8_t aem_len,
+                    const uint8_t *aemk, uint8_t *rpi, uint8_t *aem_dec);
 
 #endif // CRYPTO_H

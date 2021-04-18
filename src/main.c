@@ -13,15 +13,8 @@
 /* Zephyr includes */
 #include <logging/log.h>
 #include <zephyr.h>
-#include <sys/printk.h>
 
-#include "gaens/gaens.h"
-#include "gaens/crypto.h"
-
-#include <sys/time.h>
-#include <unistd.h>
-#include <posix/time.h>
-
+#include "gaens/gaens_test.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Defines
@@ -33,44 +26,6 @@ LOG_MODULE_REGISTER(main);
 ////////////////////////////////////////////////////////////////////////////////
 // Main
 ////////////////////////////////////////////////////////////////////////////////
-
-void print_array(uint8_t *arr, uint8_t len, char *str)
-{
-    printk("%s", str);
-    for (int i = 0; i < len; i++)
-    {
-        printk("%.2x ", arr[i]);
-    }
-    printk("\n");
-}
-
-int arrays_eq(uint8_t *arr1, uint8_t *arr2, uint8_t len)
-{
-    for (int i = 0; i < len; i++)
-    {
-        if (arr1[i] != arr2[i])
-        {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-void set_current_time(uint32_t current_time)
-{
-    struct timespec ts = {
-        .tv_sec = current_time,
-        .tv_nsec = 0,
-    }; 
-    clock_settime(CLOCK_REALTIME, &ts);
-}
-
-uint32_t get_current_time(void)
-{
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    return (uint32_t)ts.tv_sec;
-}
 
 void main(void)
 {
@@ -127,4 +82,6 @@ void main(void)
     // uint32_t current_time = (uint32_t) time(NULL);
     // LOG_INF("Should be: %d", current_time / 600);
     // LOG_INF("Current time: %d", current_time);
+    gaens_test_run_all();
+    LOG_INF("Exiting");
 }
