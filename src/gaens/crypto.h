@@ -46,6 +46,12 @@
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Initialize the crypto library. This initializes the keys used in the
+ * two AES encryptions for the RPI and AEM.
+ * 
+ * @return int 0 on success, negative otherwise
+ */
 int crypto_init(void);
 
 /**
@@ -138,6 +144,18 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
 int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
               const uint8_t bt_metadata_len, uint8_t *aem);
 
+/**
+ * @brief Decrypt associated encrypted metadata based on a given RPI and AEMK
+ * used for encryption.
+ * 
+ * @param aem Pointer to associated encrypted metadata to encrypt
+ * @param aem_len Length of @c aem (should be AEM_LENGTH)
+ * @param aemk Pointer to associated encrypted metadata key which was used when
+ * encrypting
+ * @param rpi Pointer to rolling proximity identifier used when encrypting
+ * @param aem_dec Pointer to store decrypted metadata in
+ * @return int 0 on success, negative otherwise
+ */
 int crypto_aem_decrypt(const uint8_t *aem, const uint8_t aem_len,
                     const uint8_t *aemk, uint8_t *rpi, uint8_t *aem_dec);
 

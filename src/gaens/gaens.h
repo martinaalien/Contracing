@@ -28,6 +28,12 @@
 // Public function declarations
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Initialize GAENS module. Must be run before attempting to use any of
+ * the other functions in this module.
+ * 
+ * @return int 0 on success, negative otherwise
+ */
 int gaens_init(void);
 
 /**
@@ -99,6 +105,14 @@ int gaens_update_keys(void);
 int gaens_encrypt_metadata(const uint8_t *metadata, const uint8_t metadata_len,
                            uint8_t *aem);
 
+/**
+ * @brief Decrypt metadata encrypted with the current RPI and AEMK.
+ * 
+ * @param aem Pointer to associated encrypted metadata to decrypt
+ * @param aem_len Length of @c aem (should be AEM_LENGTH)
+ * @param decrypted_aem Pointer to store decrypted output in
+ * @return int  0 on success, negative otherwise
+ */
 int gaens_decrypt_metadata(const uint8_t *aem, const uint8_t aem_len, 
                             uint8_t *decrypted_aem);
 

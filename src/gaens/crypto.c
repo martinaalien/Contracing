@@ -66,10 +66,11 @@ int crypto_en_interval_number(uint32_t *output)
 
 int crypto_tek(uint8_t *tek, uint8_t tek_len, uint32_t *tek_timestamp)
 {
-    uint32_t *en_interval_number = 0;
-    crypto_en_interval_number(en_interval_number);
+    uint32_t en_interval_number = 0;
+    crypto_en_interval_number(&en_interval_number);
+    
     *tek_timestamp =
-        (*en_interval_number / TEK_ROLLING_PERIOD) * TEK_ROLLING_PERIOD;
+        (en_interval_number / TEK_ROLLING_PERIOD) * TEK_ROLLING_PERIOD;
 
     if (sys_csrand_get(tek, tek_len) < 0)
     {
@@ -85,8 +86,8 @@ int crypto_rpik(const uint8_t *tek, const uint8_t tek_len, uint8_t *rpik,
 {
     uint8_t *info = "EN-RPIK";
 
-    if (_hkdf_generate_key(tek, tek_len, info, strlen(info), rpik, rpik_len) !=
-        0)
+    if (_hkdf_generate_key(tek, tek_len, info, strlen(info), rpik, 
+                           rpik_len) != 0)
     {
         LOG_ERR("Failed to generate rolling proximity identified key.");
         return -1;
@@ -112,7 +113,8 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi)
     }
 
     // Encrypt data to get rolling proximity identifier
-    if (mbedtls_aes_crypt_ecb(&rpi_aes_ctx, MBEDTLS_AES_ENCRYPT, padded_data, rpi) != 0)
+    if (mbedtls_aes_crypt_ecb(&rpi_aes_ctx, MBEDTLS_AES_ENCRYPT, padded_data, 
+                              rpi) != 0)
     {
         LOG_ERR("Failed to create rolling proximity identifier from AES in "
                 "mbedtls.");
@@ -122,7 +124,8 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi)
     return 0;
 }
 
-int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi, uint8_t *dec_rpi)
+int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi, 
+                       uint8_t *dec_rpi)
 {
     // Set decryption key
     if (mbedtls_aes_setkey_dec(&rpi_aes_ctx, rpik, 128) != 0)
@@ -132,7 +135,8 @@ int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi, uint8_t *dec_rpi
     }
 
     // Decrypt RPI
-    if (mbedtls_aes_crypt_ecb(&rpi_aes_ctx, MBEDTLS_AES_DECRYPT, rpi, dec_rpi) != 0)
+    if (mbedtls_aes_crypt_ecb(&rpi_aes_ctx, MBEDTLS_AES_DECRYPT, rpi, 
+                              dec_rpi) != 0)
     {
         LOG_ERR("Failed to decrypt rolling proximity identifier from AES in "
                 "mbedtls.");
@@ -160,20 +164,17 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
 int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
               const uint8_t bt_metadata_len, uint8_t *aem)
 {
-    // Call mbedtls_aes_init(&ctx) first
-    // See example https://esp32.com/viewtopic.php?t=11891
     // Set the encryption key
-
     if (mbedtls_aes_setkey_enc(&aem_aes_ctx, aemk, 128) != 0)
     {
         LOG_ERR("Failed to set AES encryption key.");
         return -1;
     }
 
-    uint8_t stream_block[16] = {0}; // Don't understand what this argument is for
+    uint8_t stream_block[16] = {0};
     size_t nc_off = 0;
-    if (mbedtls_aes_crypt_ctr(&aem_aes_ctx, bt_metadata_len, &nc_off, rpi, stream_block,
-                              bt_metadata, aem) != 0)
+    if (mbedtls_aes_crypt_ctr(&aem_aes_ctx, bt_metadata_len, &nc_off, rpi, 
+                              stream_block, bt_metadata, aem) != 0)
     {
         LOG_ERR("Failed to create associated encrypted metadata from AES-CTR "
                 "in mbedtls.");
@@ -186,7 +187,8 @@ int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
 int crypto_aem_decrypt(const uint8_t *aem, const uint8_t aem_len,
                     const uint8_t *aemk, uint8_t *rpi, uint8_t *aem_dec)
 {
-
+    // Set decryption key (AES-CTR has to use the same function for encryption
+    // and decryption, hence ...setkey_enc and not ...setkey_dec)
     if (mbedtls_aes_setkey_enc(&aem_aes_ctx, aemk, 128) != 0)
     {
         LOG_ERR("Failed to set AES decryption key.");

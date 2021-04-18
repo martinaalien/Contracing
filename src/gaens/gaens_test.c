@@ -130,12 +130,18 @@ void test_aem(void)
     uint8_t output_aem_1[AEM_LENGTH];
     gaens_encrypt_metadata(dummy_metadata, AEM_LENGTH, output_aem_1);
     print_array_hex(output_aem_1, AEM_LENGTH, "\tOutput AEM: ");
+    // uint8_t rpi1[RPI_LENGTH] = {0};
+    // gaens_get_rpi(rpi1);
+    // print_array_hex(rpi1, RPI_LENGTH, "\tCurrent RPI: ");
 
     printk("2. Encrypting same dummy data again\n");
     uint8_t output_aem_2[AEM_LENGTH];
     gaens_encrypt_metadata(dummy_metadata, AEM_LENGTH, output_aem_2);
     print_array_hex(output_aem_2, AEM_LENGTH, "\tOutput AEM: ");
     printk("\tFirst and second AEM equal: %d (should be 1)\n", arrays_eq(output_aem_1, output_aem_2, AEM_LENGTH));
+    // uint8_t rpi2[RPI_LENGTH] = {0};
+    // gaens_get_rpi(rpi2);
+    // print_array_hex(rpi2, RPI_LENGTH, "\tCurrent RPI: ");
 
     printk("3. Forwarding time by 10 minutes and updating RPI\n");
     uint32_t current_time = get_current_time();
@@ -151,7 +157,7 @@ void test_aem(void)
     printk("5. Decrypting dummy AEM data\n");
     uint8_t decrypted_aem[AEM_LENGTH];
     gaens_decrypt_metadata(output_aem_3, AEM_LENGTH, decrypted_aem);
-    print_array_hex(output_aem_3, AEM_LENGTH, "\tDecrypted AEM: ");
+    print_array_hex(decrypted_aem, AEM_LENGTH, "\tDecrypted AEM: ");
     printk("\tDecrypted AEM equal to dummy metadata: %d (should be 1)\n", arrays_eq(dummy_metadata, decrypted_aem, AEM_LENGTH));
 }
 

@@ -120,8 +120,7 @@ int gaens_encrypt_metadata(const uint8_t *metadata, const uint8_t metadata_len,
     uint8_t rpi_copy[RPI_LENGTH];
     memcpy(rpi_copy, current_rpi, RPI_LENGTH);
 
-    if (crypto_aem(current_aemk, current_rpi, metadata, metadata_len, aem) <
-        0)
+    if (crypto_aem(current_aemk, rpi_copy, metadata, metadata_len, aem) < 0)
     {
         LOG_ERR("Failed to encrypt metadata");
         return -1;
@@ -136,7 +135,8 @@ int gaens_decrypt_metadata(const uint8_t *aem, const uint8_t aem_len,
     uint8_t rpi_copy[RPI_LENGTH];
     memcpy(rpi_copy, current_rpi, RPI_LENGTH);
 
-    if (crypto_aem_decrypt(aem, aem_len, current_aemk, current_rpi, decrypted_aem) < 0)
+    if (crypto_aem_decrypt(aem, aem_len, current_aemk, rpi_copy, 
+                           decrypted_aem) < 0)
     {
         LOG_ERR("Failed to decrypt AEM");
         return -1;
