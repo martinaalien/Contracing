@@ -2,7 +2,11 @@
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "ble/advertise.h"
 #include "ble/ble.h"
+#include "ble/scan.h"
+#include "records/extmem.h"
+#include "records/storage.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -23,7 +27,31 @@ LOG_MODULE_REGISTER(main);
 
 void main(void)
 {
+    int err;
+
     LOG_INF("It's alive!\n");
 
-    ble_init();
+    err = ble_init();
+    if (err)
+    {
+        LOG_ERR("Failed to initialize BLE");
+    }
+
+    err = extmem_init();
+    if (err)
+    {
+        LOG_ERR("Failed to initialize external memory");
+    }
+
+    err = advertise_start();
+    if (err)
+    {
+        LOG_ERR("Failed to start advertising");
+    }
+
+    err = scan_start();
+    if (err)
+    {
+        LOG_ERR("Failed to start scanning");
+    }
 }
