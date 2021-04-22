@@ -28,7 +28,7 @@ LOG_MODULE_REGISTER(scan);
 
 #define EXPOSURE_NOTIFICATION_SERVICE_UUID          0xFD6F
 #define BT_UUID_GAENS                               BT_UUID_DECLARE_16(EXPOSURE_NOTIFICATION_SERVICE_UUID)
-#define WEARABLE_EXPOSURE_NOTIFICATION_SERVICE_UUID 0xFFFF
+#define WEARABLE_EXPOSURE_NOTIFICATION_SERVICE_UUID 0xFF00
 #define BT_UUID_WENS                                                           \
     BT_UUID_DECLARE_16(WEARABLE_EXPOSURE_NOTIFICATION_SERVICE_UUID)
 
@@ -45,8 +45,8 @@ static bool scan_active = false;
 static struct bt_le_scan_param scan_param = {
     .type = BT_HCI_LE_SCAN_PASSIVE,
     .options = BT_LE_SCAN_OPT_NONE,
-    .interval = 0x0010,
-    .window = 0x0010,
+    .interval = 0x3E80, // 10 seconds
+    .window = 0x0030,   // 300 milliseconds
 };
 
 ////////////////////////////////////////////////////////////////////////////////
