@@ -33,7 +33,7 @@ LOG_MODULE_REGISTER(advertise);
 
 static const uint8_t WENS_FLAGS[] = {(BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)};
 static const uint8_t WENS_UUID[] = {
-    0xFF,
+    0x00,
     0xFF}; // WENS UUID. NOTE: This is not the correct UUID, but is just a placeholder until the correct UUID is found.
 static const uint8_t GAENS_UUID[] = {0x6F, 0xFD}; // Google/Apple ENS UUID
 static const uint8_t GAENS_FLAGS[] = {
