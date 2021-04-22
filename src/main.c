@@ -5,7 +5,6 @@
 #include "ble/advertise.h"
 #include "ble/ble.h"
 #include "ble/scan.h"
-#include "ble/services/wens/wens.h"
 #include "records/extmem.h"
 #include "records/storage.h"
 #include <stdio.h>
@@ -55,12 +54,4 @@ void main(void)
     {
         LOG_ERR("Failed to start scanning");
     }
-
-    // extmem_erase(0, EXTMEM_SUBSECTOR_SIZE);
-
-    // uint8_t rp[16] = {1,2,3,4,5,6,7,8,9,1,2,3,4,5,5, 6};
-    // storage_write_entry(0x22223333, rp, 0xaa, 0xdd);
-    // storage_write_entry(0x22223333, rp, 0xaa, 0xdd);
-    // storage_write_entry(0x22223333, rp, 0xaa, 0xdd);
-    // storage_read_block();
 }
