@@ -14,4 +14,5 @@ target_sources(app PRIVATE src/main.c
                            src/records/storage.c
                            src/gaens/crypto.c
                            src/gaens/gaens.c
-                           src/ble/services/wens/wens.c)
+                           src/ble/services/wens/wens.c
+                           src/gaens/gaens_test.c)

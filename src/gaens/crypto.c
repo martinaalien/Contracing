@@ -5,6 +5,7 @@
 
 #include "crypto.h"
 
+#include <posix/time.h>
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -20,33 +21,58 @@
 #define LOG_MODULE_NAME crypto
 LOG_MODULE_REGISTER(crypto);
 
+#define SECONDS_IN_10_MINUTES 600
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private function declarations
 ////////////////////////////////////////////////////////////////////////////////
 
 int _hkdf_generate_key(const uint8_t *int_key, const uint8_t int_key_len,
-                      uint8_t *info, uint8_t info_len, uint8_t *out_key,
-                      const uint8_t out_key_len);
+                       uint8_t *info, uint8_t info_len, uint8_t *out_key,
+                       const uint8_t out_key_len);
+
+////////////////////////////////////////////////////////////////////////////////
+// Private variables
+////////////////////////////////////////////////////////////////////////////////
+
+static mbedtls_aes_context rpi_aes_ctx;
+static mbedtls_aes_context aem_aes_ctx;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
+int crypto_init(void)
+{
+    mbedtls_aes_init(&rpi_aes_ctx);
+
+    mbedtls_aes_init(&aem_aes_ctx);
+
+    return 0;
+}
+
 int crypto_en_interval_number(uint32_t *output)
 {
-    time_t epoch_timestamp = time(NULL);
+    struct timespec current_time;
 
-    *output = (uint32_t)epoch_timestamp / 600;
+    if (clock_gettime(CLOCK_REALTIME, &current_time) < 0)
+    {
+        LOG_ERR("Failed to get current time");
+        return -1;
+    }
+
+    *output = (uint32_t)(current_time.tv_sec / SECONDS_IN_10_MINUTES);
 
     return 0;
 }
 
 int crypto_tek(uint8_t *tek, uint8_t tek_len, uint32_t *tek_timestamp)
 {
-    uint32_t *en_interval_number = 0;
-    crypto_en_interval_number(en_interval_number);
+    uint32_t en_interval_number = 0;
+    crypto_en_interval_number(&en_interval_number);
+
     *tek_timestamp =
-        (*en_interval_number / TEK_ROLLING_PERIOD) * TEK_ROLLING_PERIOD;
+        (en_interval_number / TEK_ROLLING_PERIOD) * TEK_ROLLING_PERIOD;
 
     if (sys_csrand_get(tek, tek_len) < 0)
     {
@@ -58,7 +84,7 @@ int crypto_tek(uint8_t *tek, uint8_t tek_len, uint32_t *tek_timestamp)
 }
 
 int crypto_rpik(const uint8_t *tek, const uint8_t tek_len, uint8_t *rpik,
-               const uint8_t rpik_len)
+                const uint8_t rpik_len)
 {
     uint8_t *info = "EN-RPIK";
 
@@ -81,16 +107,16 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi)
     crypto_en_interval_number(&en_in_j);
     memcpy(&padded_data[12], &en_in_j, sizeof(en_in_j));
 
-    // Create the encryption key
-    mbedtls_aes_context ctx;
-    if (mbedtls_aes_setkey_enc(&ctx, rpik, 128) != 0)
+    // Set the encryption key
+    if (mbedtls_aes_setkey_enc(&rpi_aes_ctx, rpik, 128) != 0)
     {
         LOG_ERR("Failed to set AES encryption key.");
         return -1;
     }
 
     // Encrypt data to get rolling proximity identifier
-    if (mbedtls_aes_crypt_ecb(&ctx, MBEDTLS_AES_ENCRYPT, padded_data, rpi) != 0)
+    if (mbedtls_aes_crypt_ecb(&rpi_aes_ctx, MBEDTLS_AES_ENCRYPT, padded_data,
+                              rpi) != 0)
     {
         LOG_ERR("Failed to create rolling proximity identifier from AES in "
                 "mbedtls.");
@@ -100,8 +126,30 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi)
     return 0;
 }
 
+int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi,
+                       uint8_t *dec_rpi)
+{
+    // Set decryption key
+    if (mbedtls_aes_setkey_dec(&rpi_aes_ctx, rpik, 128) != 0)
+    {
+        LOG_ERR("Failed to set AES decryption key.");
+        return -1;
+    }
+
+    // Decrypt RPI
+    if (mbedtls_aes_crypt_ecb(&rpi_aes_ctx, MBEDTLS_AES_DECRYPT, rpi,
+                              dec_rpi) != 0)
+    {
+        LOG_ERR("Failed to decrypt rolling proximity identifier from AES in "
+                "mbedtls.");
+        return -1;
+    }
+
+    return 0;
+}
+
 int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
-               const uint8_t aemk_len)
+                const uint8_t aemk_len)
 {
     uint8_t *info = "EN-AEMK";
 
@@ -116,22 +164,46 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
 }
 
 int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
-              const uint8_t bt_metadata_len, uint8_t *aem)
+               const uint8_t bt_metadata_len, uint8_t *aem)
 {
-    // Create the encryption key
-    mbedtls_aes_context ctx;
-    if (mbedtls_aes_setkey_enc(&ctx, aemk, 128) != 0)
+    // Set the encryption key
+    if (mbedtls_aes_setkey_enc(&aem_aes_ctx, aemk, 128) != 0)
     {
         LOG_ERR("Failed to set AES encryption key.");
         return -1;
     }
 
-    uint8_t stream_block[16]; // Don't understand what this argument is for
-
-    if (mbedtls_aes_crypt_ctr(&ctx, bt_metadata_len, 0, rpi, stream_block,
-                              bt_metadata, aem) != 0)
+    uint8_t stream_block[16] = {0};
+    size_t nc_off = 0;
+    if (mbedtls_aes_crypt_ctr(&aem_aes_ctx, bt_metadata_len, &nc_off, rpi,
+                              stream_block, bt_metadata, aem) != 0)
     {
         LOG_ERR("Failed to create associated encrypted metadata from AES-CTR "
+                "in mbedtls.");
+        return -1;
+    }
+
+    return 0;
+}
+
+int crypto_aem_decrypt(const uint8_t *aem, const uint8_t aem_len,
+                       const uint8_t *aemk, uint8_t *rpi, uint8_t *aem_dec)
+{
+    // Set decryption key (AES-CTR has to use the same function for encryption
+    // and decryption, hence ...setkey_enc and not ...setkey_dec)
+    if (mbedtls_aes_setkey_enc(&aem_aes_ctx, aemk, 128) != 0)
+    {
+        LOG_ERR("Failed to set AES decryption key.");
+        return -1;
+    }
+
+    uint8_t stream_block[16]; // Don't understand what this argument is for
+    size_t nc_off = 0;
+
+    if (mbedtls_aes_crypt_ctr(&aem_aes_ctx, aem_len, &nc_off, rpi, stream_block,
+                              aem, aem_dec) != 0)
+    {
+        LOG_ERR("Failed to decrypt associated encrypted metadata from AES-CTR "
                 "in mbedtls.");
         return -1;
     }
@@ -155,8 +227,8 @@ int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
  * @return int 0 on success, negative otherwise
  */
 int _hkdf_generate_key(const uint8_t *in_key, const uint8_t in_key_len,
-                      uint8_t *info, uint8_t info_len, uint8_t *out_key,
-                      const uint8_t out_key_len)
+                       uint8_t *info, uint8_t info_len, uint8_t *out_key,
+                       const uint8_t out_key_len)
 {
     if (in_key_len != out_key_len)
     {

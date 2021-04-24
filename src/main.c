@@ -5,6 +5,7 @@
 #include "ble/advertise.h"
 #include "ble/ble.h"
 #include "ble/scan.h"
+#include "gaens/crypto.h"
 #include "records/extmem.h"
 #include "records/storage.h"
 #include <stdio.h>
@@ -30,6 +31,12 @@ void main(void)
     int err;
 
     LOG_INF("It's alive!\n");
+
+    err = crypto_init();
+    if (err)
+    {
+        LOG_ERR("Failed to initialize crypto library");
+    }
 
     err = ble_init();
     if (err)
