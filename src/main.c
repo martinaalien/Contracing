@@ -5,9 +5,12 @@
 #include "ble/advertise.h"
 #include "ble/ble.h"
 #include "ble/scan.h"
+#include "ble/services/wens/wens.h"
 #include "gaens/crypto.h"
+#include "gaens/gaens.h"
 #include "records/extmem.h"
 #include "records/storage.h"
+#include "time/time.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -32,10 +35,10 @@ void main(void)
 
     LOG_INF("It's alive!\n");
 
-    err = crypto_init();
+    err = gaens_init();
     if (err)
     {
-        LOG_ERR("Failed to initialize crypto library");
+        LOG_ERR("Failed to initialize gaens library");
     }
 
     err = ble_init();
