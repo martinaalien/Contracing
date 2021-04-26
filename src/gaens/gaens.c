@@ -18,20 +18,14 @@
 #define LOG_MODULE_NAME gaens
 LOG_MODULE_REGISTER(gaens);
 
-#define AEM_VERSONING                                                          \
-    0b01000000 // Defined in GAENS                                             \
-               // Bluetooth specification
-#define AEM_TRANSMIT_POWER                                                     \
-    0b0         // Defined in GAENS                                            \
-                // Bluetooth specification. 0dBm
-#define RFU 0b0 // Ready for Future Use
+#define AEM_VERSONING      0b01000000 // Defined in GAENS Bluetooth specification
+#define AEM_TRANSMIT_POWER 0b0 // Defined in GAENS Bluetooth specification. 0dBm
+#define RFU                0b0 // Ready for Future Use
 
 #define LOWER_RANDOM_ROTATION_INTERVAL                                         \
-    601 // Lower limit is greater                                              \
-        // than 10 minutes
+    601 // Lower limit is greater than 10 minutes
 #define UPPER_RANDOM_ROTATION_INTERVAL                                         \
-    1199 // Upper limit is less                                                \
-         //than 20 minutes
+    1199 // Upper limit is less than 20 minutes
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
