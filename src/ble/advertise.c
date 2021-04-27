@@ -22,6 +22,7 @@
 #define LOG_MODULE_NAME advertise
 LOG_MODULE_REGISTER(advertise);
 
+#define UUID16_LENGTH             2
 #define GAENS_SERVICE_DATA_LENGTH 22
 
 #define GAENS_ADV_PARAMETERS BT_LE_ADV_PARAM(0, 0x140, 0x1B0, NULL) // 200-270ms
@@ -41,7 +42,8 @@ static const uint8_t GAENS_FLAGS[] = {
 
 static bool advertise_active = false;
 
-static uint8_t gaens_service_data[GAENS_SERVICE_DATA_LENGTH] = {};
+static uint8_t gaens_service_data[UUID16_LENGTH + GAENS_SERVICE_DATA_LENGTH] =
+    {};
 
 static const struct bt_data ad_wens[] = {
     BT_DATA(BT_DATA_FLAGS, WENS_FLAGS, sizeof(WENS_FLAGS)),
@@ -82,8 +84,11 @@ int advertise_change_gaens_service_data(uint8_t *rpi, uint8_t rpi_length,
     // Add AEM at the end of data
     memcpy(&data[rpi_length], aem, aem_length);
 
+    // Fill in service data UUID
+    memcpy(gaens_service_data, GAENS_UUID, UUID16_LENGTH);
+
     // Replace old GAENS service data with new data
-    memcpy(gaens_service_data, data, GAENS_SERVICE_DATA_LENGTH);
+    memcpy(&gaens_service_data[UUID16_LENGTH], data, GAENS_SERVICE_DATA_LENGTH);
 
     return 0;
 }

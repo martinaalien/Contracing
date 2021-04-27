@@ -81,14 +81,6 @@ int gaens_init(void)
         return -1;
     }
 
-    // Fetch new RPI
-    uint8_t rpi[RPI_LENGTH] = {0};
-    if (gaens_get_rpi(rpi) < 0)
-    {
-        LOG_ERR("Failed to fetch initial RPI");
-        return -1;
-    }
-
     // Encrypt AEM
     uint8_t aem[AEM_LENGTH];
     if (gaens_encrypt_metadata(metadata, AEM_LENGTH, aem) < 0)
@@ -98,8 +90,8 @@ int gaens_init(void)
     }
 
     // Change advertise data
-    if (advertise_change_gaens_service_data(rpi, RPI_LENGTH, aem, AEM_LENGTH) <
-        0)
+    if (advertise_change_gaens_service_data(current_rpi, RPI_LENGTH, aem,
+                                            AEM_LENGTH) < 0)
     {
         LOG_ERR("Failed to update initial advertise data");
         return -1;
@@ -317,13 +309,6 @@ static void _rotate_rpi_handler(struct k_work *unused)
         LOG_ERR("Failed to update the RPI");
     }
 
-    // Fetch new RPI
-    uint8_t rpi[RPI_LENGTH] = {0};
-    if (gaens_get_rpi(rpi) < 0)
-    {
-        LOG_ERR("Failed to fetch the RPI");
-    }
-
     // Encrypt AEM
     uint8_t aem[AEM_LENGTH];
     if (gaens_encrypt_metadata(metadata, AEM_LENGTH, aem) < 0)
@@ -332,8 +317,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
     }
 
     // Change advertise data
-    if (advertise_change_gaens_service_data(rpi, RPI_LENGTH, aem, AEM_LENGTH) <
-        0)
+    if (advertise_change_gaens_service_data(current_rpi, RPI_LENGTH, aem,
+                                            AEM_LENGTH) < 0)
     {
         LOG_ERR("Failed to change the gaens service data to advertise");
     }
