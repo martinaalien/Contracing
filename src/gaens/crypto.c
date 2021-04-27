@@ -4,10 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "crypto.h"
+#include "../time/time.h"
 
-#include <posix/time.h>
 #include <string.h>
-#include <sys/time.h>
 #include <unistd.h>
 
 #include <mbedtls/aes.h>
@@ -17,6 +16,10 @@
 #include <logging/log.h>
 #include <random/rand32.h>
 #include <zephyr.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// Defines
+////////////////////////////////////////////////////////////////////////////////
 
 #define LOG_MODULE_NAME crypto
 LOG_MODULE_REGISTER(crypto);
@@ -53,15 +56,11 @@ int crypto_init(void)
 
 int crypto_en_interval_number(uint32_t *output)
 {
-    struct timespec current_time;
+    uint32_t time;
 
-    if (clock_gettime(CLOCK_REALTIME, &current_time) < 0)
-    {
-        LOG_ERR("Failed to get current time");
-        return -1;
-    }
+    get_current_time(&time);
 
-    *output = (uint32_t)(current_time.tv_sec / SECONDS_IN_10_MINUTES);
+    *output = (uint32_t)(time / SECONDS_IN_10_MINUTES);
 
     return 0;
 }

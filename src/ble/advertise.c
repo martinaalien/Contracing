@@ -22,10 +22,11 @@
 #define LOG_MODULE_NAME advertise
 LOG_MODULE_REGISTER(advertise);
 
+#define UUID16_LENGTH             2
 #define GAENS_SERVICE_DATA_LENGTH 22
 
 #define GAENS_ADV_PARAMETERS BT_LE_ADV_PARAM(0, 0x140, 0x1B0, NULL) // 200-270ms
-#define WENS_ADV_PARAMETERS  BT_LE_ADV_PARAM(1, 0x640, 0x6E0, NULL) // 1.0-1.1
+#define WENS_ADV_PARAMETERS  BT_LE_ADV_PARAM(1, 0x640, 0x6E0, NULL) // 1.0-1.1s
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
@@ -41,7 +42,8 @@ static const uint8_t GAENS_FLAGS[] = {
 
 static bool advertise_active = false;
 
-static uint8_t gaens_service_data[GAENS_SERVICE_DATA_LENGTH] = {};
+static uint8_t gaens_service_data[UUID16_LENGTH + GAENS_SERVICE_DATA_LENGTH] =
+    {};
 
 static const struct bt_data ad_wens[] = {
     BT_DATA(BT_DATA_FLAGS, WENS_FLAGS, sizeof(WENS_FLAGS)),
@@ -65,6 +67,32 @@ static int bt_ext_advertising_start(struct bt_le_adv_param *param,
 // Public functions
 ////////////////////////////////////////////////////////////////////////////////
 
+int advertise_change_gaens_service_data(uint8_t *rpi, uint8_t rpi_length,
+                                        uint8_t *aem, uint8_t aem_length)
+{
+    uint8_t data[rpi_length + aem_length];
+
+    if (advertise_active)
+    {
+        LOG_ERR("Cannot change GAENS service data while advertising is active");
+        return -1;
+    }
+
+    // Copy RPI in to data
+    memcpy(data, rpi, rpi_length);
+
+    // Add AEM at the end of data
+    memcpy(&data[rpi_length], aem, aem_length);
+
+    // Fill in service data UUID
+    memcpy(gaens_service_data, GAENS_UUID, UUID16_LENGTH);
+
+    // Replace old GAENS service data with new data
+    memcpy(&gaens_service_data[UUID16_LENGTH], data, GAENS_SERVICE_DATA_LENGTH);
+
+    return 0;
+}
+
 int advertise_start()
 {
     int err;
@@ -73,7 +101,7 @@ int advertise_start()
                                    ARRAY_SIZE(ad_gaens));
     if (err)
     {
-        LOG_INF("GAENS advertising failed to start");
+        LOG_INF("GAENS advertising failed to start (err %d)", err);
         return -1;
     }
 
@@ -81,9 +109,11 @@ int advertise_start()
                           NULL, 0);
     if (err)
     {
-        LOG_INF("WENS advertising failed to start");
+        LOG_INF("WENS advertising failed to start (err %d)", err);
         return -1;
     }
+
+    advertise_active = true;
 
     LOG_INF("Advertising started successfully");
 
@@ -99,6 +129,14 @@ int advertise_stop()
     if (err)
     {
         LOG_ERR("Failed to stop GAENS advertising (err %d)", err);
+        return -1;
+    }
+
+    // Delete extended advertising set to free connection object
+    err = bt_le_ext_adv_delete(adv_set);
+    if (err)
+    {
+        LOG_ERR("Failed to delete GAENS advertising set (err %d)", err);
         return -1;
     }
 
@@ -157,9 +195,6 @@ static int bt_ext_advertising_start(struct bt_le_adv_param *param,
                 err);
         return err;
     }
-
-    LOG_INF("Extended advertising with set %d successfully started",
-            param->sid);
 
     return err;
 }

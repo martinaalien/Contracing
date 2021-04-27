@@ -3,6 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "connection.h"
+#include "advertise.h"
+#include "scan.h"
+#include "services/wens/wens.h"
 #include <stddef.h>
 
 /* Zephyr includes */
@@ -64,6 +67,10 @@ static void _connected(struct bt_conn *connected, uint8_t err)
     {
         LOG_INF("Connected");
 
+        // Stop advertising and scanning
+        advertise_stop();
+        scan_stop();
+
         if (!conn)
         {
             conn = bt_conn_ref(connected);
@@ -80,4 +87,8 @@ static void _disconnected(struct bt_conn *disconn, uint8_t reason)
     }
 
     LOG_INF("Disconnected (reason %u)", reason);
+
+    // Start advertising and scanning again
+    advertise_start();
+    scan_start();
 }

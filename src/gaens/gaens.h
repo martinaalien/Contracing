@@ -32,6 +32,9 @@
  * @brief Initialize GAENS module. Must be run before attempting to use any of
  * the other functions in this module.
  * 
+ * @note This function should be called before starting advertising, in order to
+ * initialize the GAENS service data to advertise.
+ * 
  * @return int 0 on success, negative otherwise
  */
 int gaens_init(void);
@@ -113,8 +116,8 @@ int gaens_encrypt_metadata(const uint8_t *metadata, const uint8_t metadata_len,
  * @param decrypted_aem Pointer to store decrypted output in
  * @return int  0 on success, negative otherwise
  */
-int gaens_decrypt_metadata(const uint8_t *aem, const uint8_t aem_len, 
-                            uint8_t *decrypted_aem);
+int gaens_decrypt_metadata(const uint8_t *aem, const uint8_t aem_len,
+                           uint8_t *decrypted_aem);
 
 /**
  * @brief Check if 10 minutes have passed since the last time the Bluetooth

@@ -45,8 +45,9 @@ static bool scan_active = false;
 static struct bt_le_scan_param scan_param = {
     .type = BT_HCI_LE_SCAN_PASSIVE,
     .options = BT_LE_SCAN_OPT_NONE,
-    .interval = 0x3E80, // 10 seconds
-    .window = 0x0030,   // 300 milliseconds
+    .interval = 0x3E80, // 10 seconds. This should ideally be 1 minute, but for
+                        // some reason zephyr does not allow it.
+    .window = 0x01E0,   // 300 milliseconds
 };
 
 ////////////////////////////////////////////////////////////////////////////////
