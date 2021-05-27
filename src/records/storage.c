@@ -124,7 +124,7 @@ static void _pack_ens_log_entry(uint8_t buf[], int timestamp,
 
     // This is the length of the rest of the record in bytes
     buf[7] = 0x00;
-    buf[8] = 0x18;
+    buf[8] = 0x19;
 
     // This is the ENS-specific data in the LTV structure field
     buf[9] = 0x10;  // The length of the ENS specific data
@@ -145,9 +145,13 @@ static void _pack_ens_log_entry(uint8_t buf[], int timestamp,
     buf[24] = gaens_service_data[13];
     buf[25] = gaens_service_data[14];
     buf[26] = gaens_service_data[15];
+    buf[27] = gaens_service_data[16];
+    buf[28] = gaens_service_data[17];
+    buf[29] = gaens_service_data[18];
+    buf[30] = gaens_service_data[19];
 
     // This is the RSSI in the LTV structure field
-    buf[27] = 0x01; // Length of the RSSI value
-    buf[28] = 0x02; // The type indicating that this is the RSSI
-    buf[29] = rssi;
+    buf[31] = 0x01; // Length of the RSSI value
+    buf[32] = 0x02; // The type indicating that this is the RSSI
+    buf[33] = rssi;
 }
