@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @note Storage module
+ * 
+ * This is a module for adding, reading and manipulating Exposure Notification
+ *  records.
+ */
+
 #ifndef STORAGE_H
 #define STORAGE_H
 

@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @note Bluetooth Low Energy scan module
+ * 
+ * This is a module for controlling the BLE scanning.
+ */
+
 #ifndef SCAN_H
 #define SCAN_H
 

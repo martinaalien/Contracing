@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @note WENS library
+ * 
+ * This is a library for the Wearable Exposure Notification Service (WENS).
+ */
+
 #ifndef WENS_H
 #define WENS_H
 

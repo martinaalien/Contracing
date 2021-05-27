@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @note Cryptography module
+ * 
+ * This is a module for handling GAENS cryptography.
+ */
 
 #ifndef CRYPTO_H
 #define CRYPTO_H
@@ -89,7 +95,7 @@ int crypto_tek(uint8_t *tek, uint8_t tek_len, uint32_t *tek_timestamp);
  * @return int 0 on success, negative otherwise
  */
 int crypto_rpik(const uint8_t *tek, const uint8_t tek_len, uint8_t *rpik,
-               const uint8_t rpik_len);
+                const uint8_t rpik_len);
 
 /**
  * @brief Derive a Rolling Proximity Identifier from a Rolling Proximity 
@@ -111,7 +117,8 @@ int crypto_rpi(const uint8_t *rpik, uint8_t *rpi);
  * @param dec_rpi Pointer to store decrypted RPI in (should be @c RPI_LENGTH)
  * @return int 0 on success, negative otherwise
  */
-int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi, uint8_t *dec_rpi);
+int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi,
+                       uint8_t *dec_rpi);
 
 /**
  * @brief Derive Associated Encrypted Metadata Key from a Temporary Exposure
@@ -124,7 +131,7 @@ int crypto_rpi_decrypt(const uint8_t *rpik, const uint8_t *rpi, uint8_t *dec_rpi
  * @return int 0 on success, negative otherwise
  */
 int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
-               const uint8_t aemk_len);
+                const uint8_t aemk_len);
 
 /**
  * @brief Encrypt bluetooth metadata using an Associated Encrypted Metadata Key.
@@ -142,7 +149,7 @@ int crypto_aemk(const uint8_t *tek, const uint8_t tek_len, uint8_t *aemk,
  * @return int 0 on success, negative otherwise
  */
 int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
-              const uint8_t bt_metadata_len, uint8_t *aem);
+               const uint8_t bt_metadata_len, uint8_t *aem);
 
 /**
  * @brief Decrypt associated encrypted metadata based on a given RPI and AEMK
@@ -157,6 +164,6 @@ int crypto_aem(const uint8_t *aemk, uint8_t *rpi, const uint8_t *bt_metadata,
  * @return int 0 on success, negative otherwise
  */
 int crypto_aem_decrypt(const uint8_t *aem, const uint8_t aem_len,
-                    const uint8_t *aemk, uint8_t *rpi, uint8_t *aem_dec);
+                       const uint8_t *aemk, uint8_t *rpi, uint8_t *aem_dec);
 
 #endif // CRYPTO_H

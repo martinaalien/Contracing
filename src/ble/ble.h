@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @note Bluetooth Low Energy library
+ * 
+ * This is a library for initializing the BLE communication of the device.
+ */
+
 #ifndef BLE_H
 #define BLE_H
 
