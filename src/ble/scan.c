@@ -5,13 +5,13 @@
 #include "scan.h"
 #include "../gaens/crypto.h"
 #include "../records/storage.h"
+#include "uuid.h"
 #include <stddef.h>
 #include <unistd.h>
 
 /* Zephyr includes */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
-#include <bluetooth/uuid.h>
 
 #include <sys/byteorder.h>
 #include <sys/time.h>
@@ -26,9 +26,6 @@
 
 #define LOG_MODULE_NAME scan
 LOG_MODULE_REGISTER(scan);
-
-#define EXPOSURE_NOTIFICATION_SERVICE_UUID 0xFD6F
-#define BT_UUID_GAENS                      BT_UUID_DECLARE_16(EXPOSURE_NOTIFICATION_SERVICE_UUID)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
@@ -101,7 +98,7 @@ int scan_stop()
     err = bt_le_scan_stop();
     if (err)
     {
-        LOG_ERR("Starting scanning failed (err %d)\n", err);
+        LOG_ERR("Stopping scanning failed (err %d)\n", err);
         return -1;
     }
 
