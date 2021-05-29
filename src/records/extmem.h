@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @note External Memory module
+ * 
+ * This is a module for communicating with the external NOR flash memory.
+ */
 #ifndef EXTMEM_H
 #define EXTMEM_H
 

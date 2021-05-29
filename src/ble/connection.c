@@ -1,7 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * @file
+ * @brief USB device core layer APIs and structures
+ *
+ * This file contains the USB device core layer APIs and structures.
+ */
 #include "connection.h"
 #include "advertise.h"
 #include "scan.h"

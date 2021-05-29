@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @note Advertise library
+ * 
+ * This is a library for controlling the BLE advertising.
+ */
+
 #ifndef ADVERTISE_H
 #define ADVERTISE_H
 

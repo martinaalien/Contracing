@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @note Connection handling module
+ * 
+ * This is a module for handling BLE connections.
+ */
+
 #ifndef CONNECTION_H
 #define CONNECTION_H
 

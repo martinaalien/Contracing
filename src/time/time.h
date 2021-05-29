@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @note Time module
+ * 
+ * This is a module for setting and getting the current time.
+ */
+
 #ifndef TIME_H
 #define TIME_H
 

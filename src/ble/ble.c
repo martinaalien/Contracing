@@ -3,7 +3,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "ble.h"
+#include "../gaens/gaens.h"
+#include "advertise.h"
 #include "connection.h"
+#include "scan.h"
+#include "services/wens/wens.h"
 #include <stddef.h>
 
 /* Zephyr includes */
@@ -32,12 +36,30 @@ int ble_init(void)
 
     connection_init();
 
+    err = gaens_init();
+    if (err)
+    {
+        LOG_ERR("Failed to initialize gaens library");
+    }
+
     /* Initialize the Bluetooth Subsystem */
     err = bt_enable(NULL);
     if (err)
     {
         LOG_ERR("Bluetooth init failed (err %d)\n", err);
         return 1;
+    }
+
+    err = advertise_start();
+    if (err)
+    {
+        LOG_ERR("Failed to start advertising");
+    }
+
+    err = scan_start();
+    if (err)
+    {
+        LOG_ERR("Failed to start scanning");
     }
 
     LOG_INF("Bluetooth initialized\n");

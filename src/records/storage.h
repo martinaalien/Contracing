@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @note Storage module
+ * 
+ * This is a module for adding, reading and manipulating Exposure Notification
+ *  records.
+ */
+
 #ifndef STORAGE_H
 #define STORAGE_H
 
@@ -8,7 +16,7 @@
 // Defines
 ////////////////////////////////////////////////////////////////////////////////
 
-#define SIZE_OF_ONE_ENTRY 30 // The size of one ENS log entry in bytes
+#define SIZE_OF_ONE_ENTRY 34 // The size of one ENS log entry in bytes
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function declarations

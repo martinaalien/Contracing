@@ -22,10 +22,8 @@ LOG_MODULE_REGISTER(gaens);
 #define AEM_TRANSMIT_POWER 0b0 // Defined in GAENS Bluetooth specification. 0dBm
 #define RFU                0b0 // Ready for Future Use
 
-#define LOWER_RANDOM_ROTATION_INTERVAL                                         \
-    601 // Lower limit is greater than 10 minutes
-#define UPPER_RANDOM_ROTATION_INTERVAL                                         \
-    1199 // Upper limit is less than 20 minutes
+#define LOWER_RANDOM_ROTATION_INTERVAL 600  // Lower limit (10 minutes)
+#define UPPER_RANDOM_ROTATION_INTERVAL 1200 // Upper limit (20 minutes)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
@@ -272,8 +270,8 @@ static int _gaens_random_rotation_interval(uint32_t *interval)
     }
 
     *interval = (random_number % (UPPER_RANDOM_ROTATION_INTERVAL -
-                                  LOWER_RANDOM_ROTATION_INTERVAL + 1)) +
-                LOWER_RANDOM_ROTATION_INTERVAL;
+                                  LOWER_RANDOM_ROTATION_INTERVAL - 1)) +
+                LOWER_RANDOM_ROTATION_INTERVAL + 1;
 
     return 0;
 }

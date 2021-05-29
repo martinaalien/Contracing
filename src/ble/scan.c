@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "scan.h"
+#include "../gaens/crypto.h"
 #include "../records/storage.h"
 #include <stddef.h>
 #include <unistd.h>
@@ -26,11 +27,8 @@
 #define LOG_MODULE_NAME scan
 LOG_MODULE_REGISTER(scan);
 
-#define EXPOSURE_NOTIFICATION_SERVICE_UUID          0xFD6F
-#define BT_UUID_GAENS                               BT_UUID_DECLARE_16(EXPOSURE_NOTIFICATION_SERVICE_UUID)
-#define WEARABLE_EXPOSURE_NOTIFICATION_SERVICE_UUID 0xFF00
-#define BT_UUID_WENS                                                           \
-    BT_UUID_DECLARE_16(WEARABLE_EXPOSURE_NOTIFICATION_SERVICE_UUID)
+#define EXPOSURE_NOTIFICATION_SERVICE_UUID 0xFD6F
+#define BT_UUID_GAENS                      BT_UUID_DECLARE_16(EXPOSURE_NOTIFICATION_SERVICE_UUID)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
@@ -148,6 +146,7 @@ static bool _data_cb(struct bt_data *data, void *rssi_buf)
     uint16_t u16;
     struct bt_uuid *uuid;
     int8_t *rssi = rssi_buf;
+    uint32_t en_interval_number;
 
     switch (data->type)
     {
@@ -163,21 +162,14 @@ static bool _data_cb(struct bt_data *data, void *rssi_buf)
             memcpy(&u16, &data->data[i], sizeof(u16));
             uuid = BT_UUID_DECLARE_16(sys_le16_to_cpu(u16));
 
-            if (bt_uuid_cmp(uuid, BT_UUID_GAENS) &&
-                bt_uuid_cmp(uuid, BT_UUID_WENS))
+            if (bt_uuid_cmp(uuid, BT_UUID_GAENS))
             {
                 continue; // Continue searching through the UUID list for
-                          // GAENS or WENS UUID
+                          // GAENS UUID
             }
 
             if (!bt_uuid_cmp(uuid, BT_UUID_GAENS))
             {
-                return true;
-            }
-
-            if (!bt_uuid_cmp(uuid, BT_UUID_WENS))
-            {
-                // NOTE: Initialize connection here
                 return true;
             }
         }
@@ -192,7 +184,9 @@ static bool _data_cb(struct bt_data *data, void *rssi_buf)
             return true;
         }
 
-        storage_write_entry(time(NULL), &data->data[2], *rssi);
+        crypto_en_interval_number(&en_interval_number);
+
+        storage_write_entry(en_interval_number, &data->data[2], *rssi);
 
         return false;
     default:
