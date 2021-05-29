@@ -10,6 +10,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "wens.h"
+#include "../../uuid.h"
 #include <stdint.h>
 
 /* Zephyr includes */
@@ -27,41 +28,6 @@
 #define LOG_MODULE_NAME wens
 LOG_MODULE_REGISTER(wens);
 
-////////// Service UUID //////////
-#define WEARABLE_EXPOSURE_NOTIFICATION_SERVICE_UUID 0xFF00 // NOTE: Temporary
-#define BT_UUID_WENS                                                           \
-    BT_UUID_DECLARE_16(WEARABLE_EXPOSURE_NOTIFICATION_SERVICE_UUID)
-
-////////// Characteristics UUIDs //////////
-
-/* ENS Log */
-#define ENS_LOG_UUID    0xFF01 // NOTE: Temporary
-#define BT_UUID_ENS_LOG BT_UUID_DECLARE_16(ENS_LOG_UUID)
-
-/* WEN Features */
-#define WEN_FEATURES_UUID    0xFF02 // NOTE: Temporary
-#define BT_UUID_WEN_FEATURES BT_UUID_DECLARE_16(WEN_FEATURES_UUID)
-
-/* ENS Identifier */
-#define ENS_IDENTIFIER_UUID    0xFF03 // NOTE: Temporary
-#define BT_UUID_ENS_IDENTIFIER BT_UUID_DECLARE_16(ENS_IDENTIFIER_UUID)
-
-/* ENS Settings */
-#define ENS_SETTINGS_UUID    0xFF04 // NOTE: Temporary
-#define BT_UUID_ENS_SETTINGS BT_UUID_DECLARE_16(ENS_SETTINGS_UUID)
-
-/* Temporary Key List */
-#define TEMPORARY_KEY_LIST_UUID    0xFF05 // NOTE: Temporary
-#define BT_UUID_TEMPORARY_KEY_LIST BT_UUID_DECLARE_16(TEMPORARY_KEY_LIST_UUID)
-
-/* Record Access Control Point (RACP) */
-#define RACP_UUID    0x2A52 // NOTE: Temporary
-#define BT_UUID_RACP BT_UUID_DECLARE_16(RACP_UUID)
-
-/* WEN status */
-#define WEN_STATUS_UUID    0xFF06 // NOTE: Temporary
-#define BT_UUID_WEN_STATUS BT_UUID_DECLARE_16(WEN_STATUS_UUID)
-
 ////////////////////////////////////////////////////////////////////////////////
 // Type declarations
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,23 +42,6 @@ typedef enum
     SEGMENTATION_LAST
 } segmentation_t;
 
-/* This struct is made up of the fields in the ENS Log characteristic defined 
-in Table 4.6 in the WENS documentation. */
-typedef struct
-{
-    unsigned int segmentation : 2;
-    unsigned int flags : 6; // Reserved for future use
-    uint8_t *ens_payload;
-} ens_log_t;
-
-/* This struct is made up of the fields in the ENS Identifier characteristic
-defined in Table 4.11 in the WENS documentation. */
-typedef struct
-{
-    uint16_t uuid;
-    char version[4];
-} ens_identifier_t;
-
 /* This struct is made up of the fields in the Temporary Key List 
 characteristic defined in Table 4.14 in the WENS documentation. */
 typedef struct
@@ -100,14 +49,6 @@ typedef struct
     uint32_t timestamp;
     uint8_t temporary_key[16];
 } temp_key_list_t;
-
-/* This struct is made up of the fields in the WEN Status characteristic
-from Table 4.23 in the WENS documentation. */
-typedef struct
-{
-    uint8_t opcode;
-    uint8_t parameter[18];
-} wen_status_t;
 
 /* This enum is constructed of the opcodes for the RACP characteristic 
 from Table 4.19 and 4.20 */
@@ -151,6 +92,8 @@ typedef enum
 ////////////////////////////////////////////////////////////////////////////////
 // Private variables
 ////////////////////////////////////////////////////////////////////////////////
+
+static ens_log_t records = {0};
 
 static wen_features_t wen_features = {
     .wen_features = {.multiple_bonds_supported = 0x1,
@@ -217,15 +160,16 @@ static ssize_t _write_wen_status(struct bt_conn *conn,
                                  const void *buf, uint16_t len, uint16_t offset,
                                  uint8_t flags);
 
-static void _wen_features_ind_cb(struct bt_conn *conn,
-                                 struct bt_gatt_indicate_params *params,
-                                 uint8_t err);
+static void _indicate_cb(struct bt_conn *conn,
+                         struct bt_gatt_indicate_params *params, uint8_t err);
 
-static void
-_wens_features_indicate_destroy(struct bt_gatt_indicate_params *params);
+static void _indicate_destroy_cb(struct bt_gatt_indicate_params *params);
 
-static void wen_features_ccc_cfg_changed(const struct bt_gatt_attr *attr,
-                                         uint16_t value);
+static void _notify_ccc_cfg_changed(const struct bt_gatt_attr *attr,
+                                    uint16_t value);
+
+static void _indicate_ccc_cfg_changed(const struct bt_gatt_attr *attr,
+                                      uint16_t value);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Service define
@@ -233,24 +177,30 @@ static void wen_features_ccc_cfg_changed(const struct bt_gatt_attr *attr,
 
 BT_GATT_SERVICE_DEFINE(
     wens_svc, BT_GATT_PRIMARY_SERVICE(BT_UUID_WENS),
-    BT_GATT_CHARACTERISTIC(BT_UUID_ENS_LOG, BT_GATT_CHRC_NOTIFY, 0x00, NULL,
-                           NULL, NULL),
+    BT_GATT_CHARACTERISTIC(BT_UUID_ENS_LOG, BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_NONE, NULL, NULL, &records),
+    BT_GATT_CCC(_notify_ccc_cfg_changed,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
     BT_GATT_CHARACTERISTIC(BT_UUID_WEN_FEATURES,
                            (BT_GATT_CHRC_INDICATE | BT_GATT_CHRC_READ),
                            BT_GATT_PERM_READ, _read_wen_features, NULL,
                            &wen_features),
-    BT_GATT_CCC(wen_features_ccc_cfg_changed,
-                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE_ENCRYPT),
+    BT_GATT_CCC(_indicate_ccc_cfg_changed,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
     BT_GATT_CHARACTERISTIC(BT_UUID_ENS_IDENTIFIER,
                            (BT_GATT_CHRC_INDICATE | BT_GATT_CHRC_READ),
                            BT_GATT_PERM_READ, _read_ens_identifier, NULL,
                            &ens_identifier),
+    BT_GATT_CCC(_indicate_ccc_cfg_changed,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
     BT_GATT_CHARACTERISTIC(BT_UUID_ENS_SETTINGS,
                            (BT_GATT_CHRC_INDICATE | BT_GATT_CHRC_READ |
                             BT_GATT_CHRC_WRITE),
                            (BT_GATT_PERM_WRITE | BT_GATT_PERM_READ),
                            _read_ens_settings, _write_ens_settings,
                            &ens_settings),
+    BT_GATT_CCC(_indicate_ccc_cfg_changed,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
     BT_GATT_CHARACTERISTIC(BT_UUID_TEMPORARY_KEY_LIST,
                            (BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE),
                            (BT_GATT_PERM_WRITE | BT_GATT_PERM_READ),
@@ -259,10 +209,14 @@ BT_GATT_SERVICE_DEFINE(
     BT_GATT_CHARACTERISTIC(BT_UUID_RACP,
                            (BT_GATT_CHRC_INDICATE | BT_GATT_CHRC_WRITE),
                            BT_GATT_PERM_WRITE, NULL, _write_racp, NULL),
+    BT_GATT_CCC(_indicate_ccc_cfg_changed,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
     BT_GATT_CHARACTERISTIC(BT_UUID_WEN_STATUS,
                            (BT_GATT_CHRC_INDICATE | BT_GATT_CHRC_WRITE),
                            BT_GATT_PERM_WRITE, NULL, _write_wen_status,
-                           &wen_status));
+                           &wen_status),
+    BT_GATT_CCC(_indicate_ccc_cfg_changed,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE));
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public functions
@@ -274,16 +228,88 @@ int wens_get_ens_settings(ens_settings_t *settings)
     return 0;
 }
 
-int wens_features_indicate(wen_features_t data)
+int wens_ens_log_notify(ens_log_t record)
 {
+    LOG_INF("Notifying ENS Record");
+
+    records = record;
+
+    return bt_gatt_notify(NULL, &wens_svc.attrs[2], &record, sizeof(record));
+}
+
+int wens_features_indicate(wen_features_t features)
+{
+    LOG_INF("Indicating WEN Features Characteristic");
+
     struct bt_gatt_indicate_params ind_params;
 
-    ind_params.attr = &wens_svc.attrs[2];
-    ind_params.func = _wen_features_ind_cb;
-    ind_params.destroy = _wens_features_indicate_destroy;
+    ind_params.attr = &wens_svc.attrs[4];
+    ind_params.func = _indicate_cb;
+    ind_params.destroy = _indicate_destroy_cb;
+    ind_params.data = &features;
+    ind_params.len = sizeof(features);
+
+    return bt_gatt_indicate(NULL, &ind_params);
+}
+
+int wens_ens_identifier_indicate(ens_identifier_t identifier)
+{
+    LOG_INF("Indicating ENS Identifier Characteristic");
+
+    struct bt_gatt_indicate_params ind_params;
+
+    ind_params.attr = &wens_svc.attrs[6];
+    ind_params.func = _indicate_cb;
+    ind_params.destroy = _indicate_destroy_cb;
+    ind_params.data = &identifier;
+    ind_params.len = sizeof(identifier);
+
+    return bt_gatt_indicate(NULL, &ind_params);
+}
+
+int wens_ens_settings_indicate(ens_settings_t settings)
+{
+    LOG_INF("Indicating ENS Settings Characteristic");
+
+    struct bt_gatt_indicate_params ind_params;
+
+    ind_params.attr = &wens_svc.attrs[8];
+    ind_params.func = _indicate_cb;
+    ind_params.destroy = _indicate_destroy_cb;
+    ind_params.data = &settings;
+    ind_params.len = sizeof(settings);
+
+    ens_settings = settings;
+
+    return bt_gatt_indicate(NULL, &ind_params);
+}
+
+int wens_racp_indicate(uint8_t data)
+{
+    LOG_INF("Indicating RACP Characteristic");
+
+    struct bt_gatt_indicate_params ind_params;
+
+    ind_params.attr = &wens_svc.attrs[11];
+    ind_params.func = _indicate_cb;
+    ind_params.destroy = _indicate_destroy_cb;
     ind_params.data = &data;
     ind_params.len = sizeof(data);
-    LOG_INF("Indicating");
+
+    return bt_gatt_indicate(NULL, &ind_params);
+}
+
+int wens_status_indicate(wen_status_t status)
+{
+    LOG_INF("Indicating ENS Status Characteristic");
+
+    struct bt_gatt_indicate_params ind_params;
+
+    ind_params.attr = &wens_svc.attrs[13];
+    ind_params.func = _indicate_cb;
+    ind_params.destroy = _indicate_destroy_cb;
+    ind_params.data = &status;
+    ind_params.len = sizeof(status);
 
     return bt_gatt_indicate(NULL, &ind_params);
 }
@@ -495,38 +521,56 @@ static ssize_t _write_wen_status(struct bt_conn *conn,
 }
 
 /**
- * @brief WEN Features indication callback function.
+ * @brief Indication callback function.
  * 
  * @param conn Connection object.
  * @param params Indication params object.
  * @param err ATT error code.
  */
-static void _wen_features_ind_cb(struct bt_conn *conn,
-                                 struct bt_gatt_indicate_params *params,
-                                 uint8_t err)
+static void _indicate_cb(struct bt_conn *conn,
+                         struct bt_gatt_indicate_params *params, uint8_t err)
 {
-    //printk("Indication %s\n", err != 0U ? "fail" : "success");
+    LOG_INF("Indication %s\n", err != 0U ? "fail" : "success");
 }
 
 /**
- * @brief WEN Features indication destroy callback function.
+ * @brief Indication destroy callback function.
  * 
  * @param params Indication params object.
  */
-static void
-_wens_features_indicate_destroy(struct bt_gatt_indicate_params *params)
+static void _indicate_destroy_cb(struct bt_gatt_indicate_params *params)
 {
-    //printk("Indication complete\n");
+    LOG_INF("Indication complete\n");
 }
 
 /**
- * @brief WEN Features CCC config change callback function
+ * @brief CCC config change callback function for notifications.
  * 
  * @param attr   The attribute that's changed value.
  * @param value  New value.
  */
-static void wen_features_ccc_cfg_changed(const struct bt_gatt_attr *attr,
-                                         uint16_t value)
+static void _notify_ccc_cfg_changed(const struct bt_gatt_attr *attr,
+                                    uint16_t value)
 {
-    LOG_INF("CCC");
+    ARG_UNUSED(attr);
+
+    bool notif_enabled = (value == BT_GATT_CCC_NOTIFY);
+
+    LOG_INF("WENS Notifications %s", notif_enabled ? "enabled" : "disabled");
+}
+
+/**
+ * @brief CCC config change callback function for indications.
+ * 
+ * @param attr   The attribute that's changed value.
+ * @param value  New value.
+ */
+static void _indicate_ccc_cfg_changed(const struct bt_gatt_attr *attr,
+                                      uint16_t value)
+{
+    ARG_UNUSED(attr);
+
+    bool indicate_enabled = (value == BT_GATT_CCC_INDICATE);
+
+    LOG_INF("WENS Indications %s", indicate_enabled ? "enabled" : "disabled");
 }
