@@ -18,4 +18,5 @@ target_sources(app PRIVATE src/main.c
                            src/ble/services/wens/wens.c
                            src/time/time.c
                            src/ble/services/bs/bas.c
-                           src/ble/services/dis/dis.c)
+                           src/ble/services/dis/dis.c
+                           src/ble/services/dts/dts.c)
