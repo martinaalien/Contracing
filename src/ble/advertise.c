@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "advertise.h"
+#include "uuid.h"
 #include <stddef.h>
 
 /* Zephyr includes */
@@ -32,26 +33,19 @@ LOG_MODULE_REGISTER(advertise);
 // Private variables
 ////////////////////////////////////////////////////////////////////////////////
 
-static const uint8_t WENS_FLAGS[] = {(BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)};
-static const uint8_t WENS_UUID[] = {
-    0x00,
-    0xFF}; // WENS UUID. NOTE: This is not the correct UUID, but is just a placeholder until the correct UUID is found.
-static const uint8_t GAENS_UUID[] = {0x6F, 0xFD}; // Google/Apple ENS UUID
-static const uint8_t GAENS_FLAGS[] = {
-    0x1A}; // The flags are defined by the GAENS specification
-
 static bool advertise_active = false;
 
 static uint8_t gaens_service_data[UUID16_LENGTH + GAENS_SERVICE_DATA_LENGTH] =
     {};
 
 static const struct bt_data ad_wens[] = {
-    BT_DATA(BT_DATA_FLAGS, WENS_FLAGS, sizeof(WENS_FLAGS)),
-    BT_DATA(BT_DATA_UUID16_ALL, WENS_UUID, sizeof(WENS_UUID))};
+    BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
+    BT_DATA_BYTES(BT_DATA_UUID16_ALL, BT_UUID_16_ENCODE(BT_UUID_WENS_VAL)),
+};
 
 static const struct bt_data ad_gaens[] = {
-    BT_DATA(BT_DATA_FLAGS, GAENS_FLAGS, sizeof(GAENS_FLAGS)),
-    BT_DATA(BT_DATA_UUID16_ALL, GAENS_UUID, sizeof(GAENS_UUID)),
+    BT_DATA_BYTES(BT_DATA_FLAGS, 0x1A),
+    BT_DATA_BYTES(BT_DATA_UUID16_ALL, BT_UUID_16_ENCODE(BT_UUID_GAENS_VAL)),
     BT_DATA(BT_DATA_SVC_DATA16, gaens_service_data, GAENS_SERVICE_DATA_LENGTH)};
 
 static struct bt_le_ext_adv *adv_set;
@@ -85,7 +79,8 @@ int advertise_change_gaens_service_data(uint8_t *rpi, uint8_t rpi_length,
     memcpy(&data[rpi_length], aem, aem_length);
 
     // Fill in service data UUID
-    memcpy(gaens_service_data, GAENS_UUID, UUID16_LENGTH);
+    gaens_service_data[0] = BT_UUID_GAENS_VAL & 0xFF;
+    gaens_service_data[1] = BT_UUID_GAENS_VAL >> 8;
 
     // Replace old GAENS service data with new data
     memcpy(&gaens_service_data[UUID16_LENGTH], data, GAENS_SERVICE_DATA_LENGTH);

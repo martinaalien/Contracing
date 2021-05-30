@@ -3,6 +3,10 @@ This is an wearable implementation of Google/Apple Exposure Notification
 System (GAENS) and Wearable Exposure Notification Service (WENS). The  
 implementation is created for Nordic Semiconductor's nRF52833 SoC.
 
+## Install Zephyr
+To be able to build this project you need to install the Zephyr devlopment  
+environment. This can be done by following their [Getting Started Guide]("https://docs.zephyrproject.org/latest/getting_started/index.html").  
+
 ## Comments
 This sections includes some comments regarding the implementation.
 

@@ -7,6 +7,8 @@
 #include "advertise.h"
 #include "connection.h"
 #include "scan.h"
+#include "services/bs/bas.h"
+#include "services/dis/dis.h"
 #include "services/wens/wens.h"
 #include <stddef.h>
 
