@@ -287,6 +287,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
     if (advertise_stop() < 0)
     {
         LOG_ERR("Failed to pause the advertising");
+
+        return;
     }
 
     // Stop the timer
@@ -298,6 +300,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
         if (gaens_update_keys() < 0)
         {
             LOG_ERR("Failed to update TEK");
+
+            return;
         }
     }
 
@@ -305,6 +309,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
     if (gaens_update_rpi() < 0)
     {
         LOG_ERR("Failed to update the RPI");
+
+        return;
     }
 
     // Encrypt AEM
@@ -312,6 +318,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
     if (gaens_encrypt_metadata(metadata, AEM_LENGTH, aem) < 0)
     {
         LOG_ERR("Failed to encrypt the metadata");
+
+        return;
     }
 
     // Change advertise data
@@ -319,6 +327,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
                                             AEM_LENGTH) < 0)
     {
         LOG_ERR("Failed to change the gaens service data to advertise");
+
+        return;
     }
 
     // Get random rotation interval between 10 and 20 minutes
@@ -326,6 +336,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
     if (_gaens_random_rotation_interval(&random_time) < 0)
     {
         LOG_ERR("Failed to fetch random rotation interval");
+
+        return;
     }
 
     // Start a timer that will trigger in random_time
@@ -336,6 +348,8 @@ static void _rotate_rpi_handler(struct k_work *unused)
     if (advertise_start() < 0)
     {
         LOG_ERR("Failed to resume advertising");
+
+        return;
     }
 
     LOG_INF("Successfully updated RPI and AEM");
