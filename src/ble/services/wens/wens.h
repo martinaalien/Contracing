@@ -1,6 +1,6 @@
 /**
  * @file
- * @note WENS library
+ * @brief WENS library
  * 
  * This is a library for the Wearable Exposure Notification Service (WENS).
  */

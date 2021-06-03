@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Connection handling module
+ * @brief Connection handling module
  * 
  * This is a module for handling BLE connections.
  */

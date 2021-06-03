@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Bluetooth Low Energy scan module
+ * @brief Bluetooth Low Energy scan module
  * 
  * This is a module for controlling the BLE scanning.
  */

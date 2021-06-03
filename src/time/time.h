@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Time module
+ * @brief Time module
  * 
  * This is a module for setting and getting the current time.
  */
