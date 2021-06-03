@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Advertise library
+ * @brief Advertise library
  * 
  * This is a library for controlling the BLE advertising.
  */

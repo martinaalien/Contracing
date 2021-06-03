@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Battery Service library
+ * @brief Battery Service library
  * 
  * This is a library for the BLE Battery Service.
  */

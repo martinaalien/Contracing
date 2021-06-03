@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Cryptography module
+ * @brief Cryptography module
  * 
  * This is a module for handling GAENS cryptography.
  */

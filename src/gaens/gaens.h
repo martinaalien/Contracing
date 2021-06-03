@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Google/Apple Exposure Notification System cryptography module
+ * @brief Google/Apple Exposure Notification System cryptography module
  * 
  * This is a module for handling GAENS cryptography.
  */

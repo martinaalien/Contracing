@@ -1,6 +1,6 @@
 /**
  * @file
- * @note External Memory module
+ * @brief External Memory module
  * 
  * This is a module for communicating with the external NOR flash memory.
  */

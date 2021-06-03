@@ -1,6 +1,6 @@
 /**
  * @file
- * @note UUID library
+ * @brief UUID library
  * 
  * This is a library for UUIDs that is not defined in Zephyr.
  */

@@ -1,6 +1,6 @@
 /**
  * @file
- * @note Bluetooth Low Energy library
+ * @brief Bluetooth Low Energy library
  * 
  * This is a library for initializing the BLE communication of the device.
  */
