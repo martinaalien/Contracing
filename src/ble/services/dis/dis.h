@@ -1,5 +1,6 @@
-/** @file
- *  @brief Device Information Service
+/** 
+ * @file
+ * @brief Device Information Service
  */
 
 #ifndef DIS_H
